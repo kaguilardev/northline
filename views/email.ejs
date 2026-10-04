@@ -1,0 +1,40 @@
+<%- include('partials/head', { title: 'Email' }) %>
+<div class="pagehead"><h1>Send an email</h1></div>
+<% if (!sendingEnabled) { %><p class="notice">Email sending is off until a <code>RESEND_API_KEY</code> is added. You can still write and preview.</p><% } %>
+<% if (result) { %>
+  <p class="<%= result.preview || (result.errors && result.errors.length) ? 'notice' : 'success' %>">
+    <% if (result.preview) { %><%= result.message %><% } else { %>Sent to <%= result.sent %> of <%= result.total %> clients.<% if (result.errors.length) { %> <%= result.errors.length %> failed: <%= result.errors.slice(0,3).join('; ') %><% } %><% } %>
+  </p>
+<% } %>
+<div class="grid2 wide-left">
+  <form class="card form" method="post" action="/admin/email" id="emailForm" onsubmit="return confirm('Send this email to the selected clients?')">
+    <label>Start from a saved special
+      <select onchange="if(this.value) location='/admin/email?special='+this.value">
+        <option value="">—</option>
+        <% saved.forEach(s => { %><option value="<%= s.id %>" <%= String(draft.special_id) === String(s.id) ? 'selected' : '' %>><%= s.title %></option><% }) %>
+      </select></label>
+    <input type="hidden" name="special_id" value="<%= draft.special_id || '' %>">
+    <label>Subject <input name="subject" value="<%= draft.subject %>" required></label>
+    <label>Heading <input name="heading" value="<%= draft.heading %>"></label>
+    <label>Message <textarea name="body" rows="9" required><%= draft.body %></textarea></label>
+    <label>Send to
+      <select name="audience">
+        <option value="">All opted-in clients (<%= audienceCount %>)</option>
+        <% statuses.forEach(s => { %><option value="<%= s %>">Only “<%= s.replace('_',' ') %>” clients</option><% }) %>
+      </select></label>
+    <div class="row">
+      <button class="btn"><%= sendingEnabled ? 'Send email' : 'Test (preview only)' %></button>
+      <button class="btn ghost" type="button" onclick="preview()">Refresh preview</button>
+    </div>
+  </form>
+  <div class="card flush preview"><iframe id="pv" title="Email preview"></iframe></div>
+</div>
+<script>
+  async function preview() {
+    const f = document.getElementById('emailForm');
+    const r = await fetch('/admin/email/preview', { method: 'POST', body: new URLSearchParams(new FormData(f)) });
+    document.getElementById('pv').srcdoc = await r.text();
+  }
+  preview();
+</script>
+<%- include('partials/foot') %>

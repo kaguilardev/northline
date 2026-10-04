@@ -1,0 +1,13 @@
+<%- include('partials/head', { title: 'Home' }) %>
+<section class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow"><%= business %></p>
+    <h1>Yards that look cared for, all year long.</h1>
+    <p class="lede">Mowing, cleanups, planting and outdoor living, done by a crew that shows up when we say we will.</p>
+    <div class="row">
+      <a class="btn" href="mailto:<%= (process.env.EMAIL_FROM || '').replace(/.*<|>.*/g,'') %>">Request a quote</a>
+      <a class="btn ghost" href="/login">Admin sign in</a>
+    </div>
+  </div>
+</section>
+<%- include('partials/foot') %>

@@ -1,0 +1,31 @@
+<%- include('partials/head', { title: client.id ? client.name : 'New client' }) %>
+<% const d = client.next_visit ? new Date(client.next_visit).toISOString().slice(0,10) : ''; %>
+<div class="pagehead"><h1><%= client.id ? 'Edit client' : 'New client' %></h1><a href="/admin/clients" class="muted">← All clients</a></div>
+<form class="card form" method="post" action="/admin/clients<%= client.id ? '/' + client.id : '' %>">
+  <% if (error) { %><p class="alert"><%= error %></p><% } %>
+  <div class="cols">
+    <label>Name * <input name="name" value="<%= client.name || '' %>" required></label>
+    <label>Service <input name="service" value="<%= client.service || '' %>" placeholder="e.g. Weekly mowing"></label>
+    <label>Email <input type="email" name="email" value="<%= client.email || '' %>"></label>
+    <label>Phone <input name="phone" value="<%= client.phone || '' %>"></label>
+    <label class="span2">Address <input name="address" value="<%= client.address || '' %>"></label>
+    <label>Status
+      <select name="status">
+        <% ['lead','quoted','scheduled','in_progress','completed','on_hold'].forEach(s => { %>
+          <option value="<%= s %>" <%= (client.status || 'lead') === s ? 'selected' : '' %>><%= s.replace('_',' ') %></option>
+        <% }) %>
+      </select></label>
+    <label>Next visit <input type="date" name="next_visit" value="<%= d %>"></label>
+    <label class="span2">Notes <textarea name="notes" rows="4"><%= client.notes || '' %></textarea></label>
+    <label class="check span2"><input type="checkbox" name="email_opt_in" <%= client.email_opt_in === false ? '' : 'checked' %>> Send this client marketing emails</label>
+  </div>
+  <div class="row">
+    <button class="btn">Save client</button>
+  </div>
+</form>
+<% if (client.id) { %>
+<form method="post" action="/admin/clients/<%= client.id %>/delete" onsubmit="return confirm('Delete this client?')">
+  <button class="link danger">Delete client</button>
+</form>
+<% } %>
+<%- include('partials/foot') %>

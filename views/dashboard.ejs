@@ -1,0 +1,31 @@
+<%- include('partials/head', { title: 'Dashboard' }) %>
+<h1>Good to see you<%= admin.name ? ', ' + admin.name : '' %>.</h1>
+<div class="stats">
+  <% Object.entries(byStatus).forEach(([s, n]) => { %>
+    <a class="stat" href="/admin/clients?status=<%= s %>"><span class="n"><%= n %></span><span class="pill <%= s %>"><%= s.replace('_',' ') %></span></a>
+  <% }) %>
+</div>
+<div class="grid2">
+  <section class="card">
+    <h2>Upcoming visits</h2>
+    <% if (!upcoming.length) { %><p class="muted">Nothing scheduled. Set a next visit date on a client.</p><% } %>
+    <ul class="list">
+      <% upcoming.forEach(c => { %>
+        <li><a href="/admin/clients/<%= c.id %>"><strong><%= c.name %></strong></a>
+          <span class="muted"><%= c.service || '' %></span>
+          <span class="date"><%= new Date(c.next_visit).toLocaleDateString('en-US',{month:'short',day:'numeric', timeZone:'UTC'}) %></span></li>
+      <% }) %>
+    </ul>
+  </section>
+  <section class="card">
+    <h2>Recent emails</h2>
+    <% if (!recentEmails.length) { %><p class="muted">No emails sent yet.</p><% } %>
+    <ul class="list">
+      <% recentEmails.forEach(e => { %>
+        <li><strong><%= e.subject %></strong><span class="muted"><%= e.recipients %> sent · <%= e.status %></span>
+          <span class="date"><%= new Date(e.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) %></span></li>
+      <% }) %>
+    </ul>
+  </section>
+</div>
+<%- include('partials/foot') %>
