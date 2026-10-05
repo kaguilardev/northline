@@ -22,16 +22,21 @@
 <% if (admin) { %>
 <header class="topbar">
   <a class="brand" href="/admin"><img src="/img/logo-mark-light.png" alt=""><span>Northline<small><%= isOwner ? 'Owner' : 'Admin' %></small></span></a>
-  <% const navItems = [['/admin','Dashboard'],['/admin/schedule','Schedule'],['/admin/requests','Requests'],['/admin/quotes','Quotes'],['/admin/jobs','Jobs'],['/admin/clients','Clients'],['/admin/applicants','Applicants'],['/admin/specials','Specials'],['/admin/email','Email']];
-     if (isOwner) navItems.push(['/admin/team','Team']); %>
-  <nav>
-    <% navItems.forEach(([href,label]) => { const on = href === '/admin' ? path === '/admin' : path.startsWith(href); %>
+  <% const navItems = [['/admin','Dashboard'],['/admin/schedule','Schedule'],['/admin/requests','Requests'],['/admin/quotes','Quotes'],['/admin/jobs','Jobs'],['/admin/clients','Clients'],['/admin/applicants','Applicants'],['/admin/specials','Marketing']]; %>
+  <nav aria-label="Admin">
+    <% navItems.forEach(([href,label]) => { const on = href === '/admin' ? path === '/admin' : label === 'Marketing' ? (path.startsWith('/admin/specials') || path.startsWith('/admin/email')) : path.startsWith(href); %>
       <a href="<%= href %>" class="<%= on ? 'on' : '' %>"><%= label %><% const badge = label === 'Requests' ? (typeof newRequests !== 'undefined' && newRequests) : label === 'Applicants' ? (typeof newApplicants !== 'undefined' && newApplicants) : 0; if (badge) { %> <span class="count"><%= badge %></span><% } %></a>
     <% }) %>
   </nav>
-  <a class="link" href="/crew">My jobs</a>
-  <a class="link" href="/" target="_blank">View site ↗</a>
-  <form method="post" action="/logout"><button class="link">Sign out</button></form>
+  <details class="acct">
+    <summary aria-label="Account menu"><span class="avatar"><%= (admin.name || admin.email).trim()[0].toUpperCase() %></span><span class="acct-name"><%= (admin.name || admin.email).split(' ')[0] %></span> ▾</summary>
+    <div class="acct-menu">
+      <a href="/crew">My jobs</a>
+      <% if (isOwner) { %><a href="/admin/team" class="<%= path.startsWith('/admin/team') ? 'on' : '' %>">Team &amp; access</a><% } %>
+      <a href="/" target="_blank">View website ↗</a>
+      <form method="post" action="/logout"><button>Sign out</button></form>
+    </div>
+  </details>
 </header>
 <% } else if (signedIn) { %>
 <header class="topbar crewbar">

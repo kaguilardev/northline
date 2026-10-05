@@ -1,5 +1,6 @@
 <%- include('partials/head', { title: 'Email' }) %>
-<div class="pagehead"><h1>Send an email</h1></div>
+<div class="pagehead"><h1>Marketing</h1></div>
+<nav class="subnav" aria-label="Marketing"><a href="/admin/specials" class="<%= path.startsWith('/admin/specials') ? 'on' : '' %>">Specials</a><a href="/admin/email" class="<%= path.startsWith('/admin/email') ? 'on' : '' %>">Email clients</a></nav>
 <% if (!sendingEnabled) { %><p class="notice">Email sending is off until a <code>RESEND_API_KEY</code> is added. You can still write and preview.</p><% } %>
 <% if (result) { %>
   <p class="<%= result.preview || (result.errors && result.errors.length) ? 'notice' : 'success' %>">

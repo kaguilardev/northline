@@ -3,7 +3,7 @@
   <div class="container">
     <div class="label">Our services</div>
     <h1>Everything your home needs, inside and out.</h1>
-    <p class="lede">We’re not just a lawn company and not just painters. Northline is one team you can call for maintenance and improvements around your home.</p>
+    <p class="lede">From a weekly mow to a freshly painted living room, Northline is one friendly, dependable team for the care and upkeep of your home.</p>
   </div>
   <div class="pines" aria-hidden="true"></div>
 </section>
@@ -22,7 +22,7 @@
       <div>
         <h3 style="font-size:26px"><%= s.name %></h3>
         <p class="muted" style="margin:8px 0 14px"><%= s.blurb %></p>
-        <div class="chips"><% d.list.forEach(l => { %><span class="chip"><%- icon('check') %><%= l %></span><% }) %></div>
+        <ul class="points"><% d.list.forEach(l => { %><li><%- icon('check') %><%= l %></li><% }) %></ul>
       </div>
       <a class="btn btn-ghost" href="<%= s.href.includes('#') ? '/estimate?service=' + s.key : s.href %>"><%= d.cta %></a>
     </div>

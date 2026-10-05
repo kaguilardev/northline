@@ -1,3 +1,7 @@
 </main>
+<script>
+  // Close the account menu when tapping anywhere else
+  document.addEventListener('click', function (e) { document.querySelectorAll('details.acct[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; }); });
+</script>
 </body>
 </html>

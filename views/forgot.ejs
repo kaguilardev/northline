@@ -1,0 +1,20 @@
+<%- include('partials/head', { title: 'Reset your password' }) %>
+<div class="auth">
+  <form method="post" action="/forgot" class="card">
+    <img src="/img/logo.png" alt="Northline Home & Outdoor" style="width:170px;margin:0 auto 18px;display:block">
+    <% if (sent) { %>
+      <h1>Check your email</h1>
+      <p>If <strong><%= email || 'that address' %></strong> belongs to someone on the team, we’ve sent a link to choose a new password. It works once and expires in 1 hour.</p>
+      <p class="muted small">Nothing in a few minutes? Check spam, or ask the owner to send you a new sign-in link from the Team page.</p>
+      <a class="btn full" href="/login" style="text-align:center">Back to sign in</a>
+    <% } else { %>
+      <h1>Forgot your password?</h1>
+      <p class="muted" style="margin-top:-8px">Enter the email you sign in with and we’ll send you a link to choose a new one.</p>
+      <% if (!emailOn) { %><p class="notice small">Email isn’t set up yet, so reset links can’t be sent. Ask the owner for a new sign-in link instead.</p><% } %>
+      <label>Email <input type="email" name="email" required autofocus autocomplete="username"></label>
+      <button class="btn full">Send reset link</button>
+      <a class="muted small" href="/login">← Back to sign in</a>
+    <% } %>
+  </form>
+</div>
+<%- include('partials/foot') %>

@@ -4,10 +4,10 @@
     <img src="/img/logo.png" alt="Northline Home & Outdoor" style="width:170px;margin:0 auto 18px;display:block">
     <% if (!u) { %>
       <h1>This link has expired</h1>
-      <p class="muted">Sign-in links work once and last 7 days. Ask the owner to send you a new one.</p>
+      <p class="muted">This link has already been used or is too old. You can <a href="/forgot">request a new reset link</a>, or ask the owner to send you one.</p>
       <a class="btn full" href="/login" style="text-align:center">Go to sign in</a>
     <% } else { %>
-      <h1>Welcome<%= u.name ? ', ' + u.name.split(' ')[0] : '' %>!</h1>
+      <h1><%= u.has_password ? "Choose a new password" : "Welcome" + (u.name ? ", " + u.name.split(" ")[0] : "") + "!" %></h1>
       <p class="muted" style="margin-top:-8px">Choose a password for <strong><%= u.email %></strong>.</p>
       <% if (error) { %><p class="alert"><%= error %></p><% } %>
       <input type="email" value="<%= u.email %>" autocomplete="username" hidden>

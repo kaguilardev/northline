@@ -9,12 +9,12 @@
 </section>
 <section class="section">
   <div class="container">
-    <div class="grid g5">
+    <div class="grid g5 balanced">
       <% areas.forEach(a => { %>
       <div class="card svc reveal" style="align-items:center;text-align:center">
         <span class="medal"><%- icon('pin') %></span>
         <h3><%= a %></h3>
-        <p><%= a === 'Surrounding Areas' ? 'Nearby? Ask us — we likely cover you.' : 'North Carolina' %></p>
+        <p><%= a === 'Surrounding Areas' ? 'Close by? Just ask — chances are we can help.' : 'North Carolina' %></p>
       </div>
       <% }) %>
     </div>

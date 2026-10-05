@@ -1,5 +1,6 @@
 <%- include('partials/head', { title: 'Specials' }) %>
-<div class="pagehead"><h1>Marketing specials</h1></div>
+<div class="pagehead"><h1>Marketing</h1></div>
+<nav class="subnav" aria-label="Marketing"><a href="/admin/specials" class="<%= path.startsWith('/admin/specials') ? 'on' : '' %>">Specials</a><a href="/admin/email" class="<%= path.startsWith('/admin/email') ? 'on' : '' %>">Email clients</a></nav>
 <form class="filters" method="get">
   <select name="season">
     <% Object.entries(seasons).forEach(([k, v]) => { %><option value="<%= k %>" <%= season === k ? 'selected' : '' %>><%= v.label %></option><% }) %>

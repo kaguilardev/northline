@@ -47,17 +47,17 @@
 
 <section class="section">
   <div class="container">
-    <div class="section-head reveal"><div class="label">Add-ons &amp; one-time services</div><h2>Additional services.</h2><p class="lede">Book these on their own, or add them to any visit.</p></div>
+    <div class="section-head reveal"><div class="label">Add-ons &amp; one-time services</div><h2>Extras, whenever you need them.</h2><p class="lede">Book any of these on their own, or add them to a regular visit.</p></div>
     <div class="addons reveal">
       <% outdoorAddons.forEach(a => { %><div class="addon"><span class="n"><%= a.name %></span><span class="v">$<%= a.from %>+</span></div><% }) %>
     </div>
     <div class="grid g2" style="margin-top:48px;align-items:start">
       <div class="reveal">
         <h3>What can affect your price</h3>
-        <p class="muted">Our published prices are starting prices for regular maintenance. A visit may cost more if the yard has:</p>
-        <div class="chips"><% lawnAdjustments.forEach(a => { %><span class="chip"><%= a.name %></span><% }) %></div>
+        <p class="muted">Our prices are a starting point for regular upkeep. A visit can take a little more time — and cost a little more — when a yard has:</p>
+        <div class="tiles c2"><% lawnAdjustments.forEach(a => { %><span class="tile"><%- icon('check') %><%= a.name %></span><% }) %></div>
       </div>
-      <div class="note reveal"><%- icon('clipboard') %><div><strong>Starting prices.</strong> <%= policy.general %> <%= policy.lawn %></div></div>
+      <div class="note reveal"><%- icon('clipboard') %><div><strong>Good to know.</strong> <%= policy.general %> <%= policy.lawn %></div></div>
     </div>
   </div>
 </section>

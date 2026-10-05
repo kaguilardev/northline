@@ -1,6 +1,11 @@
 const express = require('express');
 const db = require('../db');
-const { requireAdmin, verifyLogin, findInvite, acceptInvite, STAFF } = require('../lib/auth');
+const { requireAdmin, verifyLogin, findInvite, acceptInvite, issueInvite, STAFF } = require('../lib/auth');
+const { sendMessage, enabled: emailEnabled } = require('../lib/email');
+const { baseUrl } = require('./public');
+
+const REMEMBER_MS = 1000 * 60 * 60 * 24 * 30;
+const SESSION_MS = 1000 * 60 * 60 * 12;
 const specials = require('../lib/specials');
 const { sendBulk, renderEmail } = require('../lib/email');
 const { CLIENT_STATUSES: STATUSES, CUSTOMER_STATUSES, PROSPECT, REQ_STAGES } = require('../lib/pipeline');
@@ -23,9 +28,11 @@ router.post('/login', async (req, res, next) => {
     // Only send people back to a page their role can open
     const wanted = req.session.returnTo || '';
     const returnTo = wanted.startsWith(homeFor(user)) ? wanted : homeFor(user);
+    const remember = req.body.remember === 'on';
     req.session.regenerate((err) => {
       if (err) return next(err);
       req.session.user = user;
+      req.session.cookie.maxAge = remember ? REMEMBER_MS : SESSION_MS;
       res.redirect(returnTo);
     });
   } catch (e) { next(e); }
@@ -33,6 +40,38 @@ router.post('/login', async (req, res, next) => {
 
 router.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
+});
+
+// ---------- Forgot password: email a one-hour reset link ----------
+// Same answer whether or not the email exists, so this page can't be used to find out who's on the team.
+const resetTries = new Map(); // ip -> [timestamps]
+function tooManyResets(ip) {
+  const now = Date.now(), recent = (resetTries.get(ip) || []).filter((t) => now - t < 15 * 60 * 1000);
+  recent.push(now); resetTries.set(ip, recent);
+  if (resetTries.size > 5000) resetTries.clear(); // keep memory bounded
+  return recent.length > 5;
+}
+
+router.get('/forgot', (req, res) => res.render('forgot', { sent: false, email: '', emailOn: emailEnabled() }));
+
+router.post('/forgot', async (req, res, next) => {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase().slice(0, 200);
+    const done = () => res.render('forgot', { sent: true, email, emailOn: emailEnabled() });
+    if (!email || tooManyResets(req.ip)) return done();
+    const u = (await db.query(`SELECT id, name, email, active, invite_expires FROM nl_admins WHERE lower(email)=$1`, [email])).rows[0];
+    // one email per account every 5 minutes
+    if (!u || !u.active || (u.invite_expires && new Date(u.invite_expires) - Date.now() > 55 * 60 * 1000)) return done();
+    const link = `${baseUrl(req)}/invite/${await issueInvite(u.id, 1)}`;
+    if (emailEnabled()) {
+      sendMessage({ to: u.email, name: u.name, subject: 'Reset your Northline password', baseUrl: baseUrl(req),
+        body: `Someone (hopefully you) asked to reset your Northline password.\n\nChoose a new one here — the link works once and expires in 1 hour:\n${link}\n\nDidn’t ask for this? You can ignore this email; your password hasn’t changed.` })
+        .catch((e) => console.error('reset email failed:', e.message));
+    } else if (process.env.NODE_ENV !== 'production') {
+      console.log(`\n  [dev] Email is off, so here is the reset link for ${u.email}:\n  ${link}\n`);
+    }
+    done();
+  } catch (e) { next(e); }
 });
 
 // ---------- Set a password from an invite / reset link ----------

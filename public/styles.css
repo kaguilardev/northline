@@ -20,8 +20,10 @@ a { color: var(--green); }
 .brand small { display: block; font-size: 10px; letter-spacing: .2em; color: var(--gold); }
 .topbar nav .count { background: var(--gold); color: var(--green); border-radius: 99px; padding: 1px 7px; font-size: 11px; font-weight: 700; margin-left: 4px; }
 .mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #fff; color: var(--green); font-weight: 700; }
-.topbar nav { display: flex; gap: 4px; flex: 1; flex-wrap: wrap; }
-.topbar nav a { color: rgba(255,255,255,.8); text-decoration: none; padding: 6px 12px; border-radius: 8px; }
+.topbar nav { display: flex; gap: 2px; flex: 1; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.topbar nav::-webkit-scrollbar { display: none; }
+.topbar { flex-wrap: nowrap; }
+.topbar nav a { color: rgba(255,255,255,.82); text-decoration: none; padding: 8px 12px; border-radius: 8px; white-space: nowrap; font-weight: 500; }
 .topbar nav a:hover, .topbar nav a.on { background: rgba(255,255,255,.14); color: #fff; }
 .topbar .link { color: rgba(255,255,255,.8); }
 
@@ -106,10 +108,10 @@ tbody tr[onclick] { cursor: pointer; } tbody tr[onclick]:hover { background: #f8
 @media (max-width: 760px) {
   .grid2, .grid2.wide-left, .form .cols { grid-template-columns: 1fr; }
   .span2 { grid-column: auto; }
-  .topbar { padding: calc(10px + env(safe-area-inset-top)) 18px 10px; gap: 10px; }
+  .topbar { padding: calc(10px + env(safe-area-inset-top)) 18px 10px; gap: 10px; flex-wrap: wrap; }
   .topbar nav { order: 3; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin: 0 -18px; padding: 0 18px; }
   .topbar nav a { white-space: nowrap; padding: 10px 14px; }
-  .topbar .link { margin-left: auto; }
+  .topbar .acct { margin-left: auto; }
   th:nth-child(5), td:nth-child(5) { display: none; }
 }
 
@@ -275,3 +277,22 @@ tr.inactive td { opacity: .5; }
 .seg-opt { display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 8px 16px; border-radius: 99px; color: var(--ink); font-weight: 600; cursor: pointer; }
 .seg-opt:has(input:checked) { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 .seg-opt input { width: auto; margin: 0; }
+.login-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: -2px 0 16px; }
+.login-row label.check { margin: 0; font-size: 14px; }
+.login-row input[type=checkbox] { width: 18px; height: 18px; }
+
+[hidden] { display: none !important; }
+/* account menu */
+.acct { position: relative; flex: none; }
+.acct summary { list-style: none; display: flex; align-items: center; gap: 8px; cursor: pointer; color: rgba(255,255,255,.85); padding: 4px 6px; border-radius: 99px; font-size: 14px; }
+.acct summary::-webkit-details-marker { display: none; }
+.acct summary:hover { background: rgba(255,255,255,.1); }
+.avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--gold); color: var(--green); font-weight: 700; }
+.acct-menu { position: absolute; right: 0; top: calc(100% + 8px); min-width: 200px; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 16px 36px -12px rgba(0,0,0,.3); padding: 6px; z-index: 50; }
+.acct-menu a, .acct-menu button { display: block; width: 100%; text-align: left; padding: 11px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; background: none; border: 0; font: 500 15px Inter, sans-serif; cursor: pointer; }
+.acct-menu a:hover, .acct-menu button:hover, .acct-menu a.on { background: var(--bg); }
+.acct-menu form { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 4px; }
+.subnav { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: -6px 0 20px; }
+.subnav a { padding: 10px 14px; text-decoration: none; color: var(--muted); font-weight: 600; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.subnav a.on { color: var(--green); border-bottom-color: var(--gold); }
+@media (max-width: 1100px) { .acct-name { display: none; } }

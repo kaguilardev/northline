@@ -14,7 +14,7 @@
 
 <section class="section">
   <div class="container">
-    <div class="section-head center reveal"><div class="label rule">What we do for businesses</div><h2>One crew for the outside of your property.</h2></div>
+    <div class="section-head center reveal"><div class="label rule">What we do for businesses</div><h2>One dependable partner for your property.</h2></div>
     <div class="grid g4">
       <% commercialServices.forEach(s => { %>
       <div class="card svc reveal" style="cursor:default">
@@ -24,8 +24,9 @@
       </div>
       <% }) %>
     </div>
-    <div class="chips reveal" style="justify-content:center;margin-top:32px">
-      <% propertyTypes.filter(p => p !== 'Other').forEach(p => { %><span class="chip"><%- icon('building') %><%= p %></span><% }) %>
+    <div class="reveal" style="margin-top:44px">
+      <div class="label rule center" style="margin-bottom:18px">Properties we care for</div>
+      <div class="tiles c3"><% propertyTypes.filter(p => p !== 'Other').forEach(p => { %><span class="tile"><%- icon('building') %><%= p %></span><% }) %></div>
     </div>
   </div>
 </section>
@@ -59,7 +60,7 @@
             <% const picked = [].concat(form.services || []); commercialServices.forEach(s => { %>
               <label class="check-box"><input type="checkbox" name="services" value="<%= s.name %>" <%= picked.includes(s.name) ? 'checked' : '' %>><span><%= s.name %></span></label>
             <% }) %>
-            <label class="check-box"><input type="checkbox" name="services" value="Something else" <%= picked.includes('Something else') ? 'checked' : '' %>><span>Something else</span></label>
+            <label class="check-box span-all"><input type="checkbox" name="services" value="Something else" <%= picked.includes('Something else') ? 'checked' : '' %>><span>Something else — tell us below</span></label>
           </div>
         </fieldset>
         <label class="field full"><span>Details</span><textarea name="description" rows="5" placeholder="Number of buildings or units, approximate square footage, current issues, ideal start date…"><%= form.description || '' %></textarea></label>

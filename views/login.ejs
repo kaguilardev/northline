@@ -6,8 +6,11 @@
     <% if (error) { %><p class="alert"><%= error %></p><% } %>
     <label>Email <input type="email" name="email" value="<%= email %>" required autofocus autocomplete="username"></label>
     <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
+    <div class="login-row">
+      <label class="check"><input type="checkbox" name="remember" checked> Remember me</label>
+      <a class="small" href="/forgot">Forgot password?</a>
+    </div>
     <button class="btn full">Sign in</button>
-    <p class="muted small" style="text-align:center;margin:12px 0 0">Forgot your password? Ask the owner for a new sign-in link.</p>
     <a class="muted small" href="/">← Back to site</a>
   </form>
 </div>
