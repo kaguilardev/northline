@@ -1,6 +1,6 @@
 <%- include('../partials/head') %>
 <div class="pagehead">
-  <div><a href="/admin/applicants" class="muted small">← All applicants</a><h1 style="margin-top:6px"><%= a.name %></h1></div>
+  <div><a href="/admin/applicants" class="muted small">← All applicants</a><h1 style="margin-top:6px"><span translate="no"><%= a.name %></span></h1></div>
   <div class="row">
     <% if (a.resume_name) { %><a class="btn gold" href="/admin/applicants/<%= a.id %>/resume">Download résumé</a><% } %>
     <% if (a.phone) { %><a class="btn ghost" href="tel:<%= a.phone %>">Call</a><% } %>
@@ -21,9 +21,9 @@
   <section class="card">
     <dl class="facts">
       <dt>Position</dt><dd><strong><%= a.position %></strong></dd>
-      <dt>Phone</dt><dd><%= a.phone || '—' %></dd>
-      <dt>Email</dt><dd><%= a.email || '—' %></dd>
-      <dt>City</dt><dd><%= a.city || '—' %></dd>
+      <dt>Phone</dt><dd><span translate="no"><%= a.phone || '—' %></span></dd>
+      <dt>Email</dt><dd><span translate="no"><%= a.email || '—' %></span></dd>
+      <dt>City</dt><dd><span translate="no"><%= a.city || '—' %></span></dd>
       <dt>Can start</dt><dd><%= a.start_date ? fmtDate(a.start_date) : '—' %></dd>
       <dt>Availability</dt><dd><%= a.availability || '—' %></dd>
       <dt>License</dt><dd><%= a.has_license ? 'Yes' : 'No' %></dd>

@@ -1,0 +1,95 @@
+<%- include('../partials/head') %>
+<% const when = (d) => new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+   const mb = (b) => Math.round(b / 1048576) + ' MB';
+   const up = (s) => s > 86400 ? Math.floor(s / 86400) + 'd ' + Math.floor(s % 86400 / 3600) + 'h' : s > 3600 ? Math.floor(s / 3600) + 'h ' + Math.floor(s % 3600 / 60) + 'm' : Math.floor(s / 60) + 'm';
+   const EV = { login_ok: ['Signed in', 'accepted'], login_fail: ['Wrong password', 'declined'], locked: ['Locked out', 'declined'], reset_request: ['Password reset asked', 'sent'], password_set: ['Password set', 'accepted'] };
+   const WHY = { honeypot: 'Bot filled a hidden field', too_many: 'Too many sends in a row', blocked_ip: 'Blocked IP tried again' };
+   const device = (ua) => !ua ? '' : /iPhone|iPad/.test(ua) ? 'iPhone/iPad' : /Android/.test(ua) ? 'Android' : /Macintosh/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : /bot|curl|python|wget/i.test(ua) ? 'Script / bot' : 'Other'; %>
+<div class="pagehead">
+  <div><h1>Security</h1><p class="muted small" style="margin:6px 0 0">Sign-in attempts, blocked spam and how the server is holding up. Items stay here until you mark them handled.</p></div>
+  <div class="row"><a class="btn ghost small" href="/admin/security<%= showAll ? '' : '?all=1' %>"><%= showAll ? 'Show only things to review' : 'Show full history' %></a>
+    <% if (s.open) { %><form method="post" action="/admin/security/resolve"><input type="hidden" name="id" value="all"><button class="btn small">Mark all handled</button></form><% } %></div>
+</div>
+<% if (flash) { %><p class="<%= /Blocked|Unblocked/.test(flash) ? 'success' : 'notice' %>"><%= flash %></p><% } %>
+
+<div class="kpis">
+  <div class="kpi <%= s.open ? 'hl' : '' %>"><div class="k">To review</div><div class="v"><%= s.open %></div><div class="s"><%= s.open ? 'items need a look' : 'all clear' %></div></div>
+  <div class="kpi"><div class="k">Wrong passwords</div><div class="v"><%= s.fails_24h %></div><div class="s">last 24 hours</div></div>
+  <div class="kpi"><div class="k">Lockouts</div><div class="v"><%= s.locks_7d %></div><div class="s">last 7 days</div></div>
+  <div class="kpi"><div class="k">Spam stopped</div><div class="v"><%= s.spam_7d %></div><div class="s">last 7 days</div></div>
+  <div class="kpi"><div class="k">Signed in now</div><div class="v"><%= sessions %></div><div class="s">active sessions</div></div>
+</div>
+
+<section class="card flush">
+  <div style="padding:18px 20px 0"><h2 style="margin:0">Sign-in activity</h2><p class="muted small">After <%= 5 %> wrong passwords, that email is paused for 15 minutes. Lots of failures from one IP you don’t recognize? Block it.</p></div>
+  <table>
+    <thead><tr><th>When</th><th>What</th><th>Account</th><th>Where from</th><th></th></tr></thead>
+    <tbody>
+      <% if (!auth.length) { %><tr><td colspan="5" class="muted center">Nothing to review. 👍</td></tr><% } %>
+      <% auth.forEach(e => { const ev = EV[e.event] || [e.event, '']; %>
+      <tr class="<%= e.resolved_at ? 'inactive' : '' %>">
+        <td class="small"><%= when(e.created_at) %></td>
+        <td><span class="pill <%= ev[1] %>"><%= ev[0] %></span></td>
+        <td><span translate="no"><%= e.name || '' %></span><div class="muted small"><span translate="no"><%= e.email || '—' %></span></div></td>
+        <td class="small"><code><%= e.ip %></code><%= e.ip === myIp ? ' (you)' : '' %><div class="muted"><%= device(e.user_agent) %></div></td>
+        <td class="actions">
+          <% if (!e.resolved_at && e.event !== 'login_ok') { %><form method="post" action="/admin/security/resolve"><input type="hidden" name="kind" value="auth"><input type="hidden" name="id" value="<%= e.id %>"><button class="link small">Handled</button></form><% } %>
+          <% if (e.ip && e.ip !== myIp && !ips.some(b => b.ip === e.ip) && e.event !== 'login_ok') { %><form method="post" action="/admin/security/block" onsubmit="return confirm('Block <%= e.ip %> from signing in and sending forms?')"><input type="hidden" name="ip" value="<%= e.ip %>"><input type="hidden" name="reason" value="<%= ev[0] %> (<%= e.email || '' %>)"><button class="link danger small">Block IP</button></form><% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<section class="card flush" style="margin-top:18px">
+  <div style="padding:18px 20px 0"><h2 style="margin:0">Spam stopped on the website</h2><p class="muted small">The estimate, business and careers forms quietly catch bots and anyone sending more than 5 times in 10 minutes. Nothing here reached your Requests.</p></div>
+  <table>
+    <thead><tr><th>When</th><th>Form</th><th>Why it was stopped</th><th>What they typed</th><th>Where from</th><th></th></tr></thead>
+    <tbody>
+      <% if (!spam.length) { %><tr><td colspan="6" class="muted center">No spam to review.</td></tr><% } %>
+      <% spam.forEach(e => { %>
+      <tr class="<%= e.resolved_at ? 'inactive' : '' %>">
+        <td class="small"><%= when(e.created_at) %></td>
+        <td class="small"><%= e.form.replace(/^\//, '') %></td>
+        <td><%= WHY[e.reason] || e.reason %></td>
+        <td class="small"><%= e.sample || '—' %></td>
+        <td class="small"><code><%= e.ip %></code><div class="muted"><%= device(e.user_agent) %></div></td>
+        <td class="actions">
+          <% if (!e.resolved_at) { %><form method="post" action="/admin/security/resolve"><input type="hidden" name="kind" value="spam"><input type="hidden" name="id" value="<%= e.id %>"><button class="link small">Handled</button></form><% } %>
+          <% if (e.ip && e.ip !== myIp && !ips.some(b => b.ip === e.ip)) { %><form method="post" action="/admin/security/block"><input type="hidden" name="ip" value="<%= e.ip %>"><input type="hidden" name="reason" value="Spam: <%= WHY[e.reason] || e.reason %>"><button class="link danger small">Block IP</button></form><% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<div class="grid2" style="margin-top:18px;align-items:start">
+  <section class="card">
+    <h2>Server health <span class="pill <%= health.trend === 'climbing' ? 'declined' : health.trend === 'rising' ? 'sent' : 'accepted' %>" style="vertical-align:middle"><%= health.trend === 'climbing' ? 'Check memory' : health.trend === 'rising' ? 'Rising' : 'Healthy' %></span></h2>
+    <% const pts = health.samples; if (pts.length > 1) { const max = Math.max(...pts.map(p => p.heap)) * 1.1, min = Math.min(...pts.map(p => p.heap)) * 0.9;
+         const path = pts.map((p, i) => (i ? 'L' : 'M') + (i / (pts.length - 1) * 300).toFixed(1) + ',' + (60 - (p.heap - min) / (max - min || 1) * 56).toFixed(1)).join(' '); %>
+      <svg class="spark" viewBox="0 0 300 62" preserveAspectRatio="none" role="img" aria-label="Memory use over the last <%= Math.round(pts.length / 60 * 10) / 10 %> hours"><path d="<%= path %>" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <% } %>
+    <p class="small" style="margin:8px 0 14px"><%= health.note %></p>
+    <dl class="facts">
+      <dt>Memory in use</dt><dd><%= mb(health.heap) %> <span class="muted small">(<%= mb(health.rss) %> total)</span></dd>
+      <dt>Running for</dt><dd><%= up(health.uptime) %> <span class="muted small">since the last deploy or restart</span></dd>
+      <dt>Node.js</dt><dd><%= health.node %></dd>
+    </dl>
+  </section>
+  <div>
+    <section class="card">
+      <h2>Blocked IPs</h2>
+      <% if (!ips.length) { %><p class="muted small" style="margin-top:0">None. Use “Block IP” above on anything suspicious.</p><% } %>
+      <ul class="list"><% ips.forEach(b => { %><li><code><%= b.ip %></code><span class="muted"><%= b.reason || '' %> · <%= fmtDate(b.created_at) %></span>
+        <span class="date"><form method="post" action="/admin/security/unblock"><input type="hidden" name="ip" value="<%= b.ip %>"><button class="link small">Unblock</button></form></span></li><% }) %></ul>
+    </section>
+    <section class="card" style="margin-top:18px">
+      <h2>Last sign-in by person</h2>
+      <ul class="list"><% team.forEach(t => { %><li><strong><span translate="no"><%= t.name || t.email %></span></strong><span class="muted"><%= t.role %></span><span class="date small"><%= t.last_login_at ? when(t.last_login_at) : 'never' %></span></li><% }) %></ul>
+    </section>
+  </div>
+</div>
+<%- include('../partials/foot') %>

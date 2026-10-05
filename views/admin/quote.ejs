@@ -1,6 +1,6 @@
 <%- include('../partials/head') %>
 <div class="pagehead">
-  <div><a href="/admin/quotes" class="muted small">← All quotes</a><h1 style="margin-top:6px"><%= quote.number %></h1></div>
+  <div><a href="/admin/quotes" class="muted small">← All quotes</a><h1 style="margin-top:6px"><span translate="no"><%= quote.number %></span></h1></div>
   <div class="row">
     <a class="btn ghost" href="/admin/quotes/<%= quote.id %>/pdf">Download PDF</a>
     <a class="btn ghost" href="/admin/quotes/<%= quote.id %>/edit">Edit</a>
@@ -30,12 +30,12 @@
     <li class="<%= st === 'sent' ? 'on' : (responded ? 'done ' + st : '') %>"><span class="b"><%= st === 'declined' ? '✕' : (st === 'accepted' ? '✓' : '3') %></span><%= responded ? (st === 'accepted' ? 'Accepted' : 'Declined') : 'Customer decides' %><small><%= responded ? when(quote.responded_at) : '' %></small></li>
     <li class="<%= job ? 'done' : (st === 'accepted' ? 'on' : '') %>"><span class="b"><%= job ? '✓' : '4' %></span>Job booked<small><%= job ? '<a href="/admin/jobs/' + job.id + '">view job</a>' : '' %></small></li>
   </ol>
-  <% if (request) { %><p class="muted small" style="margin:12px 0 0">From request: <a href="/admin/requests/<%= request.id %>"><%= request.name %></a></p><% } %>
+  <% if (request) { %><p class="muted small" style="margin:12px 0 0">From request: <a href="/admin/requests/<%= request.id %>"><span translate="no"><%= request.name %></span></a></p><% } %>
 </section>
 <div class="grid2 wide-left" style="align-items:start">
   <section class="card">
     <dl class="facts">
-      <dt>Customer</dt><dd><strong><%= quote.client_name || '—' %></strong><br><span class="muted small"><%= [quote.client_email, quote.client_phone].filter(Boolean).join(' · ') %></span></dd>
+      <dt>Customer</dt><dd><strong><span translate="no"><%= quote.client_name || '—' %></span></strong><br><span class="muted small"><span translate="no"><%= [quote.client_email, quote.client_phone].filter(Boolean).join(' · ') %></span></span></dd>
       <dt>Project</dt><dd><%= quote.title || '—' %></dd>
       <dt>Valid until</dt><dd><%= quote.valid_until ? fmtDate(quote.valid_until) : '—' %></dd>
     </dl>

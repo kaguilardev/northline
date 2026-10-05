@@ -10,7 +10,7 @@
       <tbody>
       <% users.forEach(u => { %>
         <tr onclick="location='/admin/team/<%= u.id %>'" class="<%= u.active ? '' : 'inactive' %>">
-          <td><strong><%= u.name || '—' %></strong><div class="muted small"><%= u.email %></div></td>
+          <td><strong><span translate="no"><%= u.name || '—' %></span></strong><div class="muted small"><span translate="no"><%= u.email %></span></div></td>
           <td><span class="pill role-<%= u.role %>"><%= roles.find(r => r.key === u.role).label %></span></td>
           <td class="small"><%= !u.active ? 'Switched off' : !u.has_password ? (u.invite_open ? 'Invite sent' : 'Needs a sign-in link') : u.last_login_at ? 'Last in ' + fmtDate(u.last_login_at) : 'Set up' %></td>
           <td><%= u.open_jobs || '—' %></td>

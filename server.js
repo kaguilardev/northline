@@ -77,6 +77,7 @@ app.use('/admin', async (req, res, next) => {
   next();
 });
 
+app.use(require('./lib/security').blockMiddleware);
 app.use(require('./lib/translate').middleware);
 app.get('/healthz', (req, res) => res.send('ok'));
 app.use(require('./routes/public'));
@@ -85,6 +86,7 @@ app.use(require('./routes/ops'));
 app.use(require('./routes/applicants'));
 app.use(require('./routes/team'));
 app.use(require('./routes/schedule'));
+app.use(require('./routes/owner'));
 app.use(require('./routes/crew'));
 
 app.use((req, res) => res.status(404).render('error', { message: 'Page not found.' }));
@@ -98,6 +100,9 @@ app.use((err, req, res, next) => {
     await db.migrate();
     await bootstrapAdmin();
     await require('./lib/pipeline').backfillAcceptedJobs();
+    await require('./lib/settings').load(app.locals.contact);
+    const security = require('./lib/security');
+    await security.refreshBlocked(); await security.prune(); security.startHealth();
   } catch (e) {
     console.error('\n  Could not connect to the database:', e.message, '\n');
     process.exit(1);

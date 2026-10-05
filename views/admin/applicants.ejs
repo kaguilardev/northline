@@ -11,9 +11,9 @@
     <% apps.forEach(a => { %>
       <tr onclick="location='/admin/applicants/<%= a.id %>'" class="<%= a.viewed_at ? '' : 'unread' %>">
         <td class="small"><% if (!a.viewed_at) { %><span class="dot" title="Not opened yet"></span><% } %><%= fmtDate(a.created_at) %></td>
-        <td><strong><%= a.name %></strong><div class="muted small"><%= a.phone %><%= a.has_resume ? ' · résumé' : '' %></div></td>
+        <td><strong><span translate="no"><%= a.name %></span></strong><div class="muted small"><span translate="no"><%= a.phone %></span><%= a.has_resume ? ' · résumé' : '' %></div></td>
         <td><%= a.position %></td>
-        <td class="small"><%= a.city || '—' %></td>
+        <td class="small"><span translate="no"><%= a.city || '—' %></span></td>
         <td class="small"><%= [a.has_license && 'License', a.has_transport && 'Transport'].filter(Boolean).join(' · ') || '—' %></td>
         <td onclick="event.stopPropagation()">
           <form method="post" action="/admin/applicants/<%= a.id %>">

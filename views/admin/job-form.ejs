@@ -22,9 +22,9 @@
       <input type="hidden" name="quote_id" value="<%= job.quote_id || '' %>">
       <div class="cols">
         <label class="span2">Customer
-          <select name="client_id"><option value="">Choose a customer…</option><% clients.forEach(c => { %><option value="<%= c.id %>" <%= String(job.client_id) === String(c.id) ? 'selected' : '' %>><%= c.name %></option><% }) %></select></label>
+          <select name="client_id"><option value="">Choose a customer…</option><% clients.forEach(c => { %><option value="<%= c.id %>" <%= String(job.client_id) === String(c.id) ? 'selected' : '' %>><span translate="no"><%= c.name %></span></option><% }) %></select></label>
         <label>Type of service
-          <select name="service"><option value="">Choose…</option><% SERVICE_TYPES.forEach(s => { %><option <%= job.service === s ? 'selected' : '' %>><%= s %></option><% }) %></select></label>
+          <select name="service"><option value="">Choose…</option><% SERVICE_TYPES.forEach(s => { %><option value="<%= s %>" <%= job.service === s ? 'selected' : '' %>><%= s %></option><% }) %></select></label>
         <label>What we’re doing <input name="package" value="<%= job.package || '' %>" placeholder="e.g. Full Refresh — medium lawn"></label>
         <label class="span2">Notes for the crew <small class="muted">— only your team sees this</small><textarea name="notes" rows="2" placeholder="Gate code, dog in yard, park on street…"><%= job.notes || '' %></textarea></label>
       </div>
@@ -38,9 +38,9 @@
         <fieldset class="span2 crew-pick"><legend>Crew <small class="muted">— they’ll see this job on their phone</small></legend>
           <% if (!team.length) { %><p class="muted small">No team members yet. <a href="/admin/team">Add your crew</a> so you can assign them.</p><% } %>
           <div class="crew-grid">
-            <% team.forEach(t => { %><label class="check"><input type="checkbox" name="crew" value="<%= t.id %>" <%= crewIds.includes(t.id) ? 'checked' : '' %>> <%= t.name || t.email %><% if (t.role !== 'crew') { %> <small class="muted">(<%= t.role %>)</small><% } %></label><% }) %>
+            <% team.forEach(t => { %><label class="check"><input type="checkbox" name="crew" value="<%= t.id %>" <%= crewIds.includes(t.id) ? 'checked' : '' %>> <span translate="no"><%= t.name || t.email %></span><% if (t.role !== 'crew') { %> <small class="muted">(<%= t.role %>)</small><% } %></label><% }) %>
           </div>
-          <% if (job.employees && !crewIds.length) { %><p class="muted small" style="margin:6px 0 0">Previously noted: <%= job.employees %></p><% } %>
+          <% if (job.employees && !crewIds.length) { %><p class="muted small" style="margin:6px 0 0">Previously noted: <span translate="no"><%= job.employees %></span></p><% } %>
         </fieldset>
         <label class="span2">Where it stands
           <select name="status"><% JOB_STATUSES.forEach(s => { %><option value="<%= s %>" <%= job.status === s ? 'selected' : '' %>><%= { scheduled: 'Scheduled — booked, not started', in_progress: 'In progress — crew is on it', completed: 'Completed — work is done', cancelled: 'Cancelled' }[s] %></option><% }) %></select></label>

@@ -211,6 +211,47 @@ CREATE TABLE IF NOT EXISTS nl_translations (
   PRIMARY KEY (lang, formality, hash)
 );
 
+-- ── Owner settings (business details, price book) ──
+CREATE TABLE IF NOT EXISTS nl_settings (
+  key         TEXT PRIMARY KEY,
+  value       JSONB NOT NULL,
+  updated_by  TEXT,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ── Security: sign-in attempts, blocked spam, blocked IPs ──
+CREATE TABLE IF NOT EXISTS nl_auth_events (
+  id          SERIAL PRIMARY KEY,
+  event       TEXT NOT NULL,          -- login_ok, login_fail, locked, reset_request, password_set
+  email       TEXT,
+  user_id     INTEGER REFERENCES nl_admins(id) ON DELETE SET NULL,
+  ip          TEXT,
+  user_agent  TEXT,
+  resolved_at TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS nl_auth_events_recent_idx ON nl_auth_events (event, created_at DESC);
+CREATE TABLE IF NOT EXISTS nl_spam_events (
+  id          SERIAL PRIMARY KEY,
+  form        TEXT NOT NULL,
+  reason      TEXT NOT NULL,          -- honeypot, too_many, blocked_ip
+  ip          TEXT,
+  user_agent  TEXT,
+  sample      TEXT,
+  resolved_at TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS nl_blocked_ips (
+  ip          TEXT PRIMARY KEY,
+  reason      TEXT,
+  blocked_by  TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ── When each job was paid in full (revenue counts in that month) ──
+ALTER TABLE nl_jobs ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ;
+UPDATE nl_jobs SET paid_at = COALESCE(updated_at, now()) WHERE payment_status='paid' AND paid_at IS NULL;
+
 -- ── One-time data fixes (run last, once every table exists) ──
 -- Anyone who has accepted a quote is a customer, not a lead
 UPDATE nl_clients c SET status='scheduled' WHERE status IN ('lead','quoted')

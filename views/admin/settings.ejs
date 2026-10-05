@@ -1,0 +1,42 @@
+<%- include('../partials/head') %>
+<div class="pagehead"><div><h1>Settings</h1><p class="muted small" style="margin:6px 0 0">Business details and how the site’s connected services are doing.</p></div>
+  <div class="row"><a class="btn ghost" href="/admin/prices">Prices</a><a class="btn ghost" href="/admin/security">Security</a><a class="btn ghost" href="/admin/team">Team &amp; access</a></div></div>
+<% if (flash) { %><p class="<%= /saved/i.test(flash) ? 'success' : 'notice' %>"><%= flash %></p><% } %>
+<div class="grid2 wide-left" style="align-items:start">
+  <form class="card form" method="post" action="/admin/settings">
+    <h2>Business details</h2>
+    <label>Business phone <small class="muted">— shown in the website header, footer and on estimates</small><input type="tel" name="phone" value="<%= b.phone %>" placeholder="(919) 555-0100"></label>
+    <label>Business email <small class="muted">— shown on the website for customers to contact you</small><input type="email" name="email" value="<%= b.email %>" placeholder="hello@northlinehomeandoutdoors.com"></label>
+    <label>Send new request alerts to <small class="muted">— who gets an email when an estimate request, business inquiry or job application comes in</small><input type="email" name="notify" value="<%= b.notify %>" placeholder="you@example.com"></label>
+    <button class="btn gold">Save settings</button>
+  </form>
+  <div>
+    <section class="card">
+      <h2>Prices</h2>
+      <p class="muted small" style="margin-top:0">Your price list for the website and quote builder.</p>
+      <a class="btn small" href="/admin/prices">Edit prices →</a>
+    </section>
+    <section class="card" style="margin-top:18px">
+      <h2>Email <span class="pill <%= email.on ? 'accepted' : 'declined' %>" style="vertical-align:middle"><%= email.on ? 'Working' : 'Not set up' %></span></h2>
+      <dl class="facts">
+        <dt>Sends from</dt><dd><span translate="no"><%= email.from || '—' %></span></dd>
+        <dt>Alerts go to</dt><dd><span translate="no"><%= email.notify || '—' %></span></dd>
+      </dl>
+      <% if (!email.on) { %><p class="notice small"><% if (!email.hasKey) { %>Add <code>RESEND_API_KEY</code> in Render → Environment.<% } else { %>Add <code>EMAIL_FROM</code> in Render → Environment, e.g. <code>Northline Home &amp; Outdoor &lt;hello@northlinehomeandoutdoors.com&gt;</code>, and make sure the domain shows “Verified” in Resend.<% } %></p><% } %>
+    </section>
+    <section class="card" style="margin-top:18px">
+      <h2>English / Español <span class="pill <%= deepl.hasKey ? 'accepted' : 'declined' %>" style="vertical-align:middle"><%= deepl.hasKey ? 'On' : 'Off' %></span></h2>
+      <% if (deepl.usage) { const pct = Math.round(deepl.usage.character_count / deepl.usage.character_limit * 100); %>
+        <div class="meter" role="img" aria-label="<%= pct %>% of this month's DeepL allowance used"><span style="width:<%= Math.max(1, pct) %>%"></span></div>
+        <p class="muted small"><%= deepl.usage.character_count.toLocaleString() %> of <%= deepl.usage.character_limit.toLocaleString() %> characters used this month (<%= pct %>%). <%= deepl.saved.toLocaleString() %> translated sentences are saved, so repeat visits cost nothing.</p>
+      <% } else if (deepl.hasKey) { %><p class="muted small">Couldn’t reach DeepL just now to check usage.</p>
+      <% } else { %><p class="notice small">Add <code>DEEPL_API_KEY</code> in Render → Environment to show the language switch.</p><% } %>
+    </section>
+    <section class="card" style="margin-top:18px">
+      <h2>Security</h2>
+      <p class="muted small" style="margin-top:0">Sign-in attempts, blocked spam and server health.</p>
+      <a class="btn small" href="/admin/security">Open security →</a>
+    </section>
+  </div>
+</div>
+<%- include('../partials/foot') %>

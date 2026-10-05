@@ -307,3 +307,21 @@ tr.inactive td { opacity: .5; }
 .auth-lang .lang a.on { color: var(--green); }
 .crewbar { gap: 12px; }
 .warn-text { color: var(--danger); font-weight: 600; }
+
+/* prices, settings, security */
+.book-tabs.wide { max-width: 520px; margin-bottom: 16px; }
+.price-grid td, .price-grid th { padding: 10px 14px; vertical-align: middle; }
+.price-grid th small { display: block; font-weight: 500; text-transform: none; letter-spacing: 0; }
+.price-in { width: 84px; margin: 0; padding: 8px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+.price-in.changed { border-color: var(--gold); background: #fffaf0; }
+.price-ro { font-variant-numeric: tabular-nums; font-weight: 600; }
+.pair { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .dash { color: var(--muted); }
+.levels { display: flex; gap: 12px; flex-wrap: wrap; } .lvl { margin: 0; } .lvl small { display: block; margin-bottom: 4px; }
+.savebar { position: sticky; bottom: 0; display: flex; justify-content: flex-end; align-items: center; gap: 14px; padding: 14px 0 calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 30%); margin-top: 8px; }
+.meter { height: 10px; background: #eceae1; border-radius: 99px; overflow: hidden; margin: 4px 0 8px; } .meter span { display: block; height: 100%; background: var(--green-2); }
+.spark { width: 100%; height: 62px; color: var(--green-2); display: block; }
+
+.gear { flex: none; display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,.85); text-decoration: none; padding: 7px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,.25); font-size: 14px; white-space: nowrap; }
+.gear:hover, .gear.on { background: rgba(255,255,255,.14); color: #fff; }
+.topbar > .lang { flex: none; }
+@media (max-width: 1100px) { .gear-t { display: none; } }

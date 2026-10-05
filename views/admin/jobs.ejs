@@ -1,5 +1,6 @@
 <%- include('../partials/head') %>
 <div class="pagehead"><h1>Jobs</h1><a class="btn gold" href="/admin/jobs/new">+ New job</a></div>
+<div class="seg" role="group" aria-label="Payment"><a href="/admin/jobs" class="<%= !pay ? 'on' : '' %>">All jobs</a><a href="/admin/jobs?pay=unpaid" class="<%= pay === 'unpaid' ? 'on' : '' %>">Not paid yet</a><a href="/admin/jobs?pay=paid" class="<%= pay === 'paid' ? 'on' : '' %>">Paid</a></div>
 <div class="card flush">
   <table>
     <thead><tr><th>Date</th><th>Client</th><th>Service / package</th><th>Crew</th><th>Status</th><th>Payment</th><th style="text-align:right">Quoted</th><th style="text-align:right">Profit</th></tr></thead>
@@ -8,9 +9,9 @@
     <% jobs.forEach(j => { %>
       <tr onclick="location='/admin/jobs/<%= j.id %>'">
         <td class="small"><%- j.job_date ? fmtDate(j.job_date) : '<span class="warn-text">Needs a date</span>' %></td>
-        <td><strong><%= j.client_name || '—' %></strong></td>
+        <td><strong><span translate="no"><%= j.client_name || '—' %></span></strong></td>
         <td><%= j.service || '' %><div class="muted small"><%= j.package || '' %></div></td>
-        <td class="small"><%= j.employees || '—' %></td>
+        <td class="small"><span translate="no"><%= j.employees || '—' %></span></td>
         <td><span class="pill <%= j.status %>"><%= j.status.replace('_',' ') %></span></td>
         <td><span class="pill <%= j.payment_status %>"><%= j.payment_status %></span></td>
         <td class="money" style="text-align:right"><%= j.quoted_price != null ? money(j.quoted_price) : '—' %></td>

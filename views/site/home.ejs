@@ -16,9 +16,9 @@
       </div>
     </div>
     <div class="price-stack" aria-label="Starting prices">
-      <a class="price-card" href="/lawn-care"><span class="badge"><%- icon('leaf') %></span><span><span class="t">Basic Lawn Care</span><br><span class="s">Mow • Trim • Edge • Blow</span></span><span class="p"><small>From</small>$49</span></a>
-      <a class="price-card" href="/lawn-care#packages"><span class="badge"><%- icon('house') %></span><span><span class="t">Curb Appeal</span><br><span class="s">Lawn care + pressure washing</span></span><span class="p"><small>From</small>$129</span></a>
-      <a class="price-card" href="/painting"><span class="badge"><%- icon('roller') %></span><span><span class="t">Room Refresh</span><br><span class="s">Prep + two coats, one room</span></span><span class="p"><small>From</small>$400</span></a>
+      <a class="price-card" href="/lawn-care"><span class="badge"><%- icon('leaf') %></span><span><span class="t">Basic Lawn Care</span><br><span class="s">Mow • Trim • Edge • Blow</span></span><span class="p"><small>From</small><%= money(lawnPackages.find(p => p.key === 'basic').from) %></span></a>
+      <a class="price-card" href="/lawn-care#packages"><span class="badge"><%- icon('house') %></span><span><span class="t">Curb Appeal</span><br><span class="s">Lawn care + pressure washing</span></span><span class="p"><small>From</small><%= money(lawnPackages.find(p => p.key === 'curb').from) %></span></a>
+      <a class="price-card" href="/painting"><span class="badge"><%- icon('roller') %></span><span><span class="t">Room Refresh</span><br><span class="s">Prep + two coats, one room</span></span><span class="p"><small>From</small><%= paintPackages.find(p => p.key === 'room').from != null ? money(paintPackages.find(p => p.key === 'room').from) : 'Quote' %></span></a>
     </div>
   </div>
   <div class="pines" aria-hidden="true"></div>

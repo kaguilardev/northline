@@ -1,5 +1,5 @@
 <%- include('../partials/head') %>
-<div class="pagehead"><div><a href="/admin/team" class="muted small">← Team</a><h1 style="margin-top:6px"><%= u.name || u.email %> <span class="pill role-<%= u.role %>" style="vertical-align:middle"><%= roles.find(r => r.key === u.role).label %></span></h1></div></div>
+<div class="pagehead"><div><a href="/admin/team" class="muted small">← Team</a><h1 style="margin-top:6px"><span translate="no"><%= u.name || u.email %></span> <span class="pill role-<%= u.role %>" style="vertical-align:middle"><%= roles.find(r => r.key === u.role).label %></span></h1></div></div>
 <% if (flash) { %><p class="<%= /fail|has to|off/.test(flash) ? 'notice' : 'success' %>"><%= flash %></p><% } %>
 <% if (link) { %>
   <section class="card linkbox">
@@ -7,7 +7,7 @@
     <p class="muted small" style="margin-top:0">Works once, expires in 7 days. <strong>This is the only time it’s shown</strong> — copy it now.</p>
     <div class="copy"><input id="ilink" value="<%= link.url %>" readonly><button type="button" class="btn ghost small" onclick="navigator.clipboard.writeText(document.getElementById('ilink').value);this.textContent='Copied'">Copy</button></div>
     <div class="row" style="margin-top:10px">
-      <% if (u.phone) { %><a class="btn small" href="sms:<%= u.phone %>?&body=<%= encodeURIComponent('Hi ' + (u.name || '').split(' ')[0] + ', here’s your link to set up the Northline team app: ' + link.url) %>">Text it to <%= u.phone %></a><% } %>
+      <% if (u.phone) { %><a class="btn small" href="sms:<%= u.phone %>?&body=<%= encodeURIComponent('Hi ' + (u.name || '').split(' ')[0] + ', here’s your link to set up the Northline team app: ' + link.url) %>">Text it to <span translate="no"><%= u.phone %></span></a><% } %>
     </div>
   </section>
 <% } %>

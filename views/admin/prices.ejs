@@ -1,0 +1,73 @@
+<%- include('../partials/head') %>
+<% const f = (name, v, opts = {}) => canEdit
+     ? `<input class="price-in" type="number" min="0" step="1" name="${name}" value="${v ?? ''}" ${opts.req === false ? '' : 'required'} aria-label="${opts.label || name}">`
+     : `<span class="price-ro">${v == null ? (opts.empty || '—') : money(v)}</span>`; %>
+<div class="pagehead">
+  <div><h1>Prices</h1>
+    <p class="muted small" style="margin:6px 0 0"><%= canEdit ? 'Change a price and save — the website, quote builder and estimates use the new numbers right away.' : 'Your current price list. Only an owner can change prices.' %>
+    <% if (changed) { %> Last changed <%= fmtDate(changed.updated_at) %><%= changed.name ? ' by ' + changed.name.split(' ')[0] : '' %>.<% } %></p></div>
+  <a class="btn ghost" href="/lawn-care" target="_blank">See it on the website ↗</a>
+</div>
+<% if (flash) { %><p class="success"><%= flash %></p><% } %>
+<form method="post" action="/admin/prices" id="pricesForm">
+  <div class="book-tabs wide" role="tablist">
+    <button type="button" role="tab" data-tab="lawn">Lawn care</button>
+    <button type="button" role="tab" data-tab="outdoor">Outdoor extras</button>
+    <button type="button" role="tab" data-tab="paint">Painting</button>
+  </div>
+
+  <section class="pane card flush" data-pane="lawn">
+    <div style="padding:18px 20px 4px"><h2 style="margin:0">Lawn care packages</h2><p class="muted small">Price per visit, low to high, by mowable lawn size. The low price for a small lawn is the “from” price shown on the website.</p></div>
+    <table class="price-grid">
+      <thead><tr><th>Package</th><% p.LAWN_SIZES.forEach(s => { %><th><%= s.label %><small><%= s.range %></small></th><% }) %></tr></thead>
+      <tbody>
+        <% p.LAWN_PACKAGES.forEach(pk => { %><tr><td><strong><%= pk.name %></strong></td>
+          <% p.LAWN_SIZES.forEach(s => { const r = pk.prices[s.key]; %><td><span class="pair"><%- f(`lawn.${pk.key}.${s.key}.lo`, r[0], { label: pk.name + ' ' + s.label + ' low' }) %><span class="dash">–</span><%- f(`lawn.${pk.key}.${s.key}.hi`, r[1], { label: pk.name + ' ' + s.label + ' high' }) %></span></td><% }) %>
+        </tr><% }) %>
+      </tbody>
+    </table>
+    <div style="padding:18px 20px 4px"><h2 style="margin:0">Lawn conditions</h2><p class="muted small">Extra charge when a yard needs more work. These are the price choices in the quote builder.</p></div>
+    <table class="price-grid">
+      <thead><tr><th>Condition</th><th>Price choices</th></tr></thead>
+      <tbody><% p.LAWN_ADJUSTMENTS.forEach(a => { const vals = a.levels || [a.low, a.high]; const notes = a.levelNotes || ['Low end', 'High end']; %>
+        <tr><td><strong><%= a.name %></strong></td><td><span class="levels"><% vals.forEach((v, i) => { %><label class="lvl"><small><%= notes[i] %></small><%- f(`cond.${a.key}.${i}`, v, { label: a.name + ' ' + notes[i] }) %></label><% }) %></span></td></tr>
+      <% }) %></tbody>
+    </table>
+  </section>
+
+  <section class="pane card flush" data-pane="outdoor" hidden>
+    <div style="padding:18px 20px 4px"><h2 style="margin:0">Cleanup &amp; pressure washing</h2><p class="muted small">Starting prices, shown with a “+” on the website.</p></div>
+    <table class="price-grid"><thead><tr><th>Service</th><th>Starting price</th></tr></thead>
+      <tbody><% p.OUTDOOR_ADDONS.forEach(a => { %><tr><td><strong><%= a.name %></strong></td><td><%- f(`addon.${a.key}`, a.from, { label: a.name }) %></td></tr><% }) %></tbody></table>
+  </section>
+
+  <section class="pane card flush" data-pane="paint" hidden>
+    <div style="padding:18px 20px 4px"><h2 style="margin:0">Painting packages</h2><p class="muted small">Leave a price empty to show “Custom Quote” instead.</p></div>
+    <table class="price-grid"><thead><tr><th>Package</th><th>Starting price</th></tr></thead>
+      <tbody><% p.PAINT_PACKAGES.forEach(pk => { %><tr><td><strong><%= pk.name %></strong><div class="muted small"><%= pk.tagline %></div></td><td><%- f(`paint.${pk.key}`, pk.from, { req: false, empty: 'Custom Quote', label: pk.name }) %></td></tr><% }) %></tbody></table>
+    <div style="padding:18px 20px 4px"><h2 style="margin:0">Painting add-ons</h2></div>
+    <table class="price-grid"><thead><tr><th>Service</th><th>Starting price</th></tr></thead>
+      <tbody><% p.PAINT_ADDONS.forEach(a => { %><tr><td><strong><%= a.name %></strong><div class="muted small"><%= a.desc %><%= a.unit ? ' · ' + a.unit : '' %></div></td><td><%- f(`paintAddon.${a.key}`, a.from, { label: a.name }) %></td></tr><% }) %></tbody></table>
+  </section>
+
+  <% if (canEdit) { %>
+  <div class="savebar"><span class="muted small" id="dirty">No changes yet.</span><button class="btn gold">Save prices</button></div>
+  <% } %>
+</form>
+<% if (canEdit) { %>
+<form method="post" action="/admin/prices/reset" onsubmit="return confirm('Put every price back to the original price list?')" style="margin-top:16px"><button class="link danger small">Reset to the original price list</button></form>
+<% } %>
+<script>
+  (function () {
+    var tabs = document.querySelectorAll('.book-tabs [data-tab]');
+    function show(k) { tabs.forEach(function (t) { t.classList.toggle('on', t.dataset.tab === k); t.setAttribute('aria-selected', t.dataset.tab === k); });
+      document.querySelectorAll('.pane').forEach(function (p) { p.hidden = p.dataset.pane !== k; }); try { sessionStorage.setItem('nl-prices-tab', k); } catch (e) {} }
+    tabs.forEach(function (t) { t.onclick = function () { show(t.dataset.tab); }; });
+    var saved = null; try { saved = sessionStorage.getItem('nl-prices-tab'); } catch (e) {} show(saved || 'lawn');
+    var form = document.getElementById('pricesForm'), dirty = document.getElementById('dirty'), changed = false;
+    if (dirty) form.addEventListener('input', function (e) { e.target.classList.add('changed'); changed = true; dirty.textContent = 'You have unsaved changes.'; });
+    window.addEventListener('beforeunload', function (e) { if (changed) { e.preventDefault(); e.returnValue = ''; } });
+    form.addEventListener('submit', function () { changed = false; });
+  })();
+</script>
+<%- include('../partials/foot') %>

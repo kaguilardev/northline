@@ -276,8 +276,9 @@ router.get('/admin/jobs', async (req, res, next) => {
     const { rows } = await db.query(`
       SELECT j.*, c.name AS client_name, (j.quoted_price - j.actual_cost) AS profit
       FROM nl_jobs j LEFT JOIN nl_clients c ON c.id=j.client_id
+      ${req.query.pay === 'unpaid' ? `WHERE j.status<>'cancelled' AND j.payment_status<>'paid'` : req.query.pay === 'paid' ? `WHERE j.payment_status='paid'` : ''}
       ORDER BY (j.status IN ('completed','cancelled')), j.job_date NULLS LAST, j.id DESC`);
-    res.render('admin/jobs', { title: 'Jobs', jobs: rows });
+    res.render('admin/jobs', { title: 'Jobs', jobs: rows, pay: ['paid', 'unpaid'].includes(req.query.pay) ? req.query.pay : '' });
   } catch (e) { next(e); }
 });
 
@@ -334,6 +335,7 @@ function saveJob(id) {
           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id`, vals);
         jobId = rows[0].id;
       }
+      await db.query(`UPDATE nl_jobs SET paid_at = CASE WHEN payment_status='paid' THEN COALESCE(paid_at, now()) END WHERE id=$1`, [jobId]);
       await db.query('UPDATE nl_jobs SET start_time=$1 WHERE id=$2', [/^\d{2}:\d{2}$/.test(b.start_time || '') ? b.start_time : null, jobId]);
       await db.query('DELETE FROM nl_job_crew WHERE job_id=$1', [jobId]);
       for (const c of crew) await db.query('INSERT INTO nl_job_crew (job_id, user_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [jobId, c.id]);

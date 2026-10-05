@@ -1,4 +1,4 @@
-<%- include('../partials/site-head', { title: 'House Painting', description: 'Interior and exterior house painting in Durham, Raleigh, Cary and Chapel Hill. Rooms from $400, trim, doors, cabinets and staining.' }) %>
+<%- include('../partials/site-head', { title: 'House Painting', description: 'Interior and exterior house painting in Durham, Raleigh, Cary and Chapel Hill. Rooms from ' + money(paintPackages[0].from || 0) + ', trim, doors, cabinets and staining.' }) %>
 <section class="page-hero">
   <div class="container">
     <div class="label">House painting services</div>

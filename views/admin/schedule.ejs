@@ -15,7 +15,7 @@
   <input type="hidden" name="week" value="<%= week %>">
   <select name="person" onchange="this.form.submit()" aria-label="Show jobs for">
     <option value="">Everyone</option>
-    <% team.forEach(m => { %><option value="<%= m.id %>" <%= person === m.id ? 'selected' : '' %>><%= m.name || m.email %></option><% }) %>
+    <% team.forEach(m => { %><option value="<%= m.id %>" <%= person === m.id ? 'selected' : '' %>><span translate="no"><%= m.name || m.email %></span></option><% }) %>
   </select>
 </form>
 <div class="week">
@@ -26,9 +26,9 @@
     <% d.jobs.forEach(j => { %>
       <a class="sjob <%= j.status %>" href="/admin/jobs/<%= j.id %>">
         <span class="st"><%= t(j.start_time) || 'Any time' %></span>
-        <strong><%= j.client_name || 'Job #' + j.id %></strong>
+        <strong><span translate="no"><%= j.client_name || 'Job #' + j.id %></span></strong>
         <span class="small"><%= j.package || j.service || '' %></span>
-        <span class="small <%= j.no_crew ? 'warn' : 'muted' %>"><%= j.no_crew ? '⚠ No crew assigned' : '👥 ' + j.crew %></span>
+        <span class="small <%= j.no_crew ? 'warn' : 'muted' %>"><% if (j.no_crew) { %>⚠ No crew assigned<% } else { %>👥 <span translate="no"><%= j.crew %></span><% } %></span>
       </a>
     <% }) %>
   </div>
@@ -37,7 +37,7 @@
 <% if (unscheduled.length) { %>
 <h2 style="margin-top:28px">Needs a date</h2>
 <div class="card flush"><ul class="list" style="padding:0 16px">
-  <% unscheduled.forEach(j => { %><li><a href="/admin/jobs/<%= j.id %>"><strong><%= j.client_name || 'Job #' + j.id %></strong></a><span class="muted"><%= j.package || j.service || '' %> · <%= j.no_crew ? 'no crew yet' : j.crew %></span><span class="date">Set date →</span></li><% }) %>
+  <% unscheduled.forEach(j => { %><li><a href="/admin/jobs/<%= j.id %>"><strong><span translate="no"><%= j.client_name || 'Job #' + j.id %></span></strong></a><span class="muted"><%= j.package || j.service || '' %> · <% if (j.no_crew) { %>no crew yet<% } else { %><span translate="no"><%= j.crew %></span><% } %></span><span class="date">Set date →</span></li><% }) %>
 </ul></div>
 <% } %>
 <%- include('../partials/foot') %>

@@ -7,23 +7,23 @@
 <div class="kpis">
   <a class="kpi <%= k.new_requests ? 'hl' : '' %>" href="/admin/requests?status=new"><div class="k">New requests</div><div class="v"><%= k.new_requests %></div><div class="s">waiting for a reply</div></a>
   <a class="kpi" href="/admin/quotes"><div class="k">Open quotes</div><div class="v"><%= money(k.open_value) %></div><div class="s"><%= k.open_quotes %> awaiting approval</div></a>
-  <a class="kpi" href="/admin/jobs"><div class="k">Revenue this month</div><div class="v"><%= money(k.month_revenue) %></div><div class="s">completed jobs</div></a>
-  <a class="kpi" href="/admin/jobs"><div class="k">Gross profit this month</div><div class="v"><%= money(k.month_profit) %></div><div class="s">jobs with costs entered</div></a>
-  <a class="kpi" href="/admin/jobs"><div class="k">Unpaid</div><div class="v"><%= money(k.unpaid) %></div><div class="s">completed, not paid</div></a>
+  <a class="kpi" href="/admin/jobs?pay=paid"><div class="k">Revenue this month</div><div class="v"><%= money(k.month_revenue) %></div><div class="s"><%= k.month_paid_jobs %> job<%= k.month_paid_jobs === 1 ? '' : 's' %> paid this month</div></a>
+  <a class="kpi" href="/admin/jobs?pay=paid"><div class="k">Gross profit this month</div><div class="v"><%= money(k.month_profit) %></div><div class="s"><%= k.month_missing_costs ? k.month_missing_costs + ' paid job' + (k.month_missing_costs === 1 ? '' : 's') + ' still need costs' : 'paid jobs, after your costs' %></div></a>
+  <a class="kpi <%= Number(k.unpaid_done) ? 'hl' : '' %>" href="/admin/jobs?pay=unpaid"><div class="k">Unpaid</div><div class="v"><%= money(k.unpaid) %></div><div class="s"><%= k.unpaid_jobs %> job<%= k.unpaid_jobs === 1 ? '' : 's' %><%= Number(k.unpaid_done) ? ' · ' + money(k.unpaid_done) + ' already finished' : ' booked, not paid yet' %></div></a>
 </div>
 <div class="grid2">
   <section class="card">
     <h2>New estimate requests</h2>
     <% if (!requests.length) { %><p class="muted">You’re all caught up.</p><% } %>
     <ul class="list">
-      <% requests.forEach(r => { %><li><a href="/admin/requests/<%= r.id %>"><% if (!r.viewed_at) { %><span class="dot" title="Not opened yet"></span><% } %><strong><%= r.name %></strong></a><span class="muted"><%= r.service %></span><span class="date"><%= fmtDate(r.created_at) %></span></li><% }) %>
+      <% requests.forEach(r => { %><li><a href="/admin/requests/<%= r.id %>"><% if (!r.viewed_at) { %><span class="dot" title="Not opened yet"></span><% } %><strong><span translate="no"><%= r.name %></span></strong></a><span class="muted"><%= r.service %></span><span class="date"><%= fmtDate(r.created_at) %></span></li><% }) %>
     </ul>
   </section>
   <section class="card">
     <h2>Upcoming jobs</h2>
     <% if (!upcoming.length) { %><p class="muted">Nothing scheduled.</p><% } %>
     <ul class="list">
-      <% upcoming.forEach(j => { %><li><a href="/admin/jobs/<%= j.id %>"><strong><%= j.name || 'Job #' + j.id %></strong></a><span class="muted"><%= [j.service, j.package, j.employees].filter(Boolean).join(' · ') %></span><span class="date"><%= j.job_date ? new Date(j.job_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : 'TBD' %></span></li><% }) %>
+      <% upcoming.forEach(j => { %><li><a href="/admin/jobs/<%= j.id %>"><strong><span translate="no"><%= j.name || 'Job #' + j.id %></span></strong></a><span class="muted"><%= [j.service, j.package, j.employees].filter(Boolean).join(' · ') %></span><span class="date"><%= j.job_date ? new Date(j.job_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : 'TBD' %></span></li><% }) %>
     </ul>
   </section>
 </div>
@@ -32,7 +32,7 @@
   <table>
     <thead><tr><th>Service</th><th style="text-align:right">Jobs</th><th style="text-align:right">Revenue</th><th style="text-align:right">Gross profit</th><th style="text-align:right">Profit / hour</th></tr></thead>
     <tbody>
-      <% if (!byService.length) { %><tr><td colspan="5" class="muted center">No completed jobs yet.</td></tr><% } %>
+      <% if (!byService.length) { %><tr><td colspan="5" class="muted center">No completed or paid jobs yet.</td></tr><% } %>
       <% byService.forEach(s => { %><tr><td><strong><%= s.service %></strong></td><td style="text-align:right"><%= s.jobs %></td><td class="money" style="text-align:right"><%= money(s.revenue) %></td><td class="money" style="text-align:right"><%= money(s.profit) %></td><td class="money" style="text-align:right"><%= Number(s.hours) > 0 ? money(Math.round(s.profit / s.hours)) : '—' %></td></tr><% }) %>
     </tbody>
   </table>

@@ -28,11 +28,17 @@
       <a href="<%= href %>" class="<%= on ? 'on' : '' %>"><%= label %><% const badge = label === 'Requests' ? (typeof newRequests !== 'undefined' && newRequests) : label === 'Applicants' ? (typeof newApplicants !== 'undefined' && newApplicants) : 0; if (badge) { %> <span class="count"><%= badge %></span><% } %></a>
     <% }) %>
   </nav>
+  <% const gearOn = ['/admin/settings', '/admin/prices', '/admin/security'].some(p => path.startsWith(p)); %>
+  <a class="gear <%= gearOn ? 'on' : '' %>" href="<%= isOwner ? '/admin/settings' : '/admin/prices' %>"><span aria-hidden="true">⚙</span> <span class="gear-t"><%= isOwner ? 'Settings' : 'Prices' %></span></a>
+  <%- include('lang-toggle') %>
   <details class="acct">
     <summary aria-label="Account menu"><span class="avatar"><%= (admin.name || admin.email).trim()[0].toUpperCase() %></span><span class="acct-name"><%= (admin.name || admin.email).split(' ')[0] %></span> ▾</summary>
     <div class="acct-menu">
       <a href="/crew">My jobs</a>
       <a href="/admin/team" class="<%= path.startsWith('/admin/team') ? 'on' : '' %>">Team &amp; access</a>
+      <a href="/admin/prices" class="<%= path.startsWith('/admin/prices') ? 'on' : '' %>">Prices</a>
+      <% if (isOwner) { %><a href="/admin/settings" class="<%= path.startsWith('/admin/settings') ? 'on' : '' %>">Settings</a>
+      <a href="/admin/security" class="<%= path.startsWith('/admin/security') ? 'on' : '' %>">Security</a><% } %>
       <a href="/" target="_blank">View website ↗</a>
       <form method="post" action="/logout"><button>Sign out</button></form>
     </div>

@@ -3,6 +3,7 @@ const db = require('../db');
 const { requireAdmin, verifyLogin, findInvite, acceptInvite, issueInvite, STAFF } = require('../lib/auth');
 const { sendMessage, enabled: emailEnabled } = require('../lib/email');
 const { baseUrl } = require('./public');
+const security = require('../lib/security');
 
 const REMEMBER_MS = 1000 * 60 * 60 * 24 * 30;
 const SESSION_MS = 1000 * 60 * 60 * 12;
@@ -23,8 +24,16 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res, next) => {
   try {
     const { email = '', password = '' } = req.body;
+    if (await security.loginLocked(req, email.trim())) {
+      await security.logAuth(req, 'locked', email.trim());
+      return res.status(429).render('login', { error: `Too many attempts. For your security, sign-in is paused for ${security.LOCK.minutes} minutes — or use “Forgot password?”.`, email });
+    }
     const user = await verifyLogin(email.trim(), password);
-    if (!user) return res.status(401).render('login', { error: 'That email and password don\'t match.', email });
+    if (!user) {
+      await security.logAuth(req, 'login_fail', email.trim());
+      return res.status(401).render('login', { error: 'That email and password don\'t match.', email });
+    }
+    await security.logAuth(req, 'login_ok', user.email, user.id);
     // Only send people back to a page their role can open
     const wanted = req.session.returnTo || '';
     const returnTo = wanted.startsWith(homeFor(user)) ? wanted : homeFor(user);
@@ -61,6 +70,7 @@ router.post('/forgot', async (req, res, next) => {
     if (!email || tooManyResets(req.ip)) return done();
     const u = (await db.query(`SELECT id, name, email, active, invite_expires FROM nl_admins WHERE lower(email)=$1`, [email])).rows[0];
     // one email per account every 5 minutes
+    await security.logAuth(req, 'reset_request', email, u && u.id);
     if (!u || !u.active || (u.invite_expires && new Date(u.invite_expires) - Date.now() > 55 * 60 * 1000)) return done();
     const link = `${baseUrl(req)}/invite/${await issueInvite(u.id, 1)}`;
     if (emailEnabled()) {
@@ -92,6 +102,7 @@ router.post('/invite/:token', async (req, res, next) => {
     if (password !== confirm) return fail('The two passwords don’t match.');
     const user = await acceptInvite(req.params.token, password);
     if (!user) return fail(null);
+    await security.logAuth(req, 'password_set', user.email, user.id);
     req.session.regenerate((err) => {
       if (err) return next(err);
       req.session.user = user;
@@ -117,16 +128,20 @@ router.get('/admin', async (req, res, next) => {
         (SELECT count(*)::int FROM nl_requests WHERE status='new') AS new_requests,
         (SELECT count(*)::int FROM nl_quotes WHERE status='sent') AS open_quotes,
         (SELECT COALESCE(sum(total),0) FROM nl_quotes WHERE status='sent') AS open_value,
-        (SELECT COALESCE(sum(quoted_price),0) FROM nl_jobs WHERE status='completed' AND date_trunc('month', job_date)=date_trunc('month', current_date)) AS month_revenue,
-        (SELECT COALESCE(sum(quoted_price - actual_cost),0) FROM nl_jobs WHERE status='completed' AND actual_cost IS NOT NULL AND date_trunc('month', job_date)=date_trunc('month', current_date)) AS month_profit,
-        (SELECT COALESCE(sum(quoted_price),0) FROM nl_jobs WHERE status='completed' AND payment_status<>'paid') AS unpaid`),
+        (SELECT COALESCE(sum(quoted_price),0) FROM nl_jobs WHERE payment_status='paid' AND paid_at >= date_trunc('month', now())) AS month_revenue,
+        (SELECT count(*)::int FROM nl_jobs WHERE payment_status='paid' AND paid_at >= date_trunc('month', now())) AS month_paid_jobs,
+        (SELECT COALESCE(sum(quoted_price - actual_cost),0) FROM nl_jobs WHERE payment_status='paid' AND actual_cost IS NOT NULL AND paid_at >= date_trunc('month', now())) AS month_profit,
+        (SELECT count(*)::int FROM nl_jobs WHERE payment_status='paid' AND actual_cost IS NULL AND paid_at >= date_trunc('month', now())) AS month_missing_costs,
+        (SELECT COALESCE(sum(quoted_price),0) FROM nl_jobs WHERE status<>'cancelled' AND payment_status<>'paid') AS unpaid,
+        (SELECT count(*)::int FROM nl_jobs WHERE status<>'cancelled' AND payment_status<>'paid') AS unpaid_jobs,
+        (SELECT COALESCE(sum(quoted_price),0) FROM nl_jobs WHERE status='completed' AND payment_status<>'paid') AS unpaid_done`),
       db.query(`SELECT j.id, j.job_date, j.service, j.package, j.employees, c.name FROM nl_jobs j LEFT JOIN nl_clients c ON c.id=j.client_id
         WHERE j.status IN ('scheduled','in_progress') AND (j.job_date IS NULL OR j.job_date >= current_date - 1) ORDER BY j.job_date NULLS LAST LIMIT 8`),
       db.query(`SELECT id, name, service, created_at, viewed_at FROM nl_requests WHERE status='new' ORDER BY created_at DESC LIMIT 6`),
       db.query(`SELECT COALESCE(service,'Other') AS service, count(*)::int AS jobs, COALESCE(sum(quoted_price),0) AS revenue,
         COALESCE(sum(quoted_price - actual_cost) FILTER (WHERE actual_cost IS NOT NULL),0) AS profit,
         COALESCE(sum(labor_hours),0) AS hours
-        FROM nl_jobs WHERE status='completed' GROUP BY 1 ORDER BY profit DESC`),
+        FROM nl_jobs WHERE status='completed' OR payment_status='paid' GROUP BY 1 ORDER BY profit DESC`),
     ]);
     res.render('dashboard', { byStatus, pipeline, k: kpi.rows[0], upcoming: upcoming.rows, requests: requests.rows, byService: byService.rows });
   } catch (e) { next(e); }

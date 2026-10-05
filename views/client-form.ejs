@@ -29,7 +29,7 @@
   <section class="card">
     <div class="pagehead" style="margin-bottom:8px"><h2 style="margin:0">Quotes</h2><a class="btn small gold" href="/admin/quotes/new?client=<%= customer.id %>">+ Quote</a></div>
     <% if (!quotes.length) { %><p class="muted">No quotes yet.</p><% } %>
-    <ul class="list"><% quotes.forEach(q => { %><li><a href="/admin/quotes/<%= q.id %>"><strong><%= q.number %></strong></a><span class="muted"><%= q.title || '' %> · <%= money(q.total) %></span><span class="date"><span class="pill <%= q.status %>"><%= q.status %></span></span></li><% }) %></ul>
+    <ul class="list"><% quotes.forEach(q => { %><li><a href="/admin/quotes/<%= q.id %>"><strong><span translate="no"><%= q.number %></span></strong></a><span class="muted"><%= q.title || '' %> · <%= money(q.total) %></span><span class="date"><span class="pill <%= q.status %>"><%= q.status %></span></span></li><% }) %></ul>
   </section>
   <section class="card">
     <div class="pagehead" style="margin-bottom:8px"><h2 style="margin:0">Jobs</h2><a class="btn small" href="/admin/jobs/new?client=<%= customer.id %>">+ Job</a></div>

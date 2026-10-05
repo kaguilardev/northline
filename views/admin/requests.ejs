@@ -20,9 +20,9 @@
     <% requests.forEach(r => { %>
       <tr onclick="location='/admin/requests/<%= r.id %>'" class="<%= r.viewed_at ? '' : 'unread' %>">
         <td class="small"><% if (!r.viewed_at) { %><span class="dot" title="Not opened yet"></span><% } %><%= fmtDate(r.created_at) %></td>
-        <td><% if (r.kind === 'commercial') { %><span class="pill commercial">Commercial</span> <strong><%= r.company %></strong><div class="small"><%= r.name %></div><% } else { %><strong><%= r.name %></strong><% } %><div class="muted small"><%= r.phone %><% if (r.last_message_at) { %> · ✉ emailed <%= fmtDate(r.last_message_at) %><% } %></div></td>
+        <td><% if (r.kind === 'commercial') { %><span class="pill commercial">Commercial</span> <strong><span translate="no"><%= r.company %></span></strong><div class="small"><span translate="no"><%= r.name %></span></div><% } else { %><strong><span translate="no"><%= r.name %></span></strong><% } %><div class="muted small"><span translate="no"><%= r.phone %></span><% if (r.last_message_at) { %> · ✉ emailed <%= fmtDate(r.last_message_at) %><% } %></div></td>
         <td><%= r.service %></td>
-        <td class="small"><%= r.address %></td>
+        <td class="small"><span translate="no"><%= r.address %></span></td>
         <td><%= r.photo_count || '—' %></td>
         <td onclick="event.stopPropagation()">
           <form method="post" action="/admin/requests/<%= r.id %>/status">

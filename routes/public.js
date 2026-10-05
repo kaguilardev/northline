@@ -5,6 +5,7 @@ const { upload, savePhotos } = require('../lib/photos');
 const multer = require('multer');
 const { notifyNewRequest, notifyNewApplication } = require('../lib/email');
 const biz = require('../lib/business');
+const security = require('../lib/security');
 const { markQuoteAccepted } = require('../lib/pipeline');
 
 const router = express.Router();
@@ -47,7 +48,8 @@ router.post('/estimate', (req, res, next) => {
     const form = req.body || {};
     const fail = (msg) => res.status(400).render('site/estimate', { error: msg, form, serviceOptions: SERVICE_OPTIONS });
     if (err) return fail(err.code === 'LIMIT_FILE_SIZE' ? 'One of the photos is too large (10 MB max each).' : 'We couldn’t upload those photos. Please try again with up to 8 images.');
-    if (form.website) return res.redirect('/estimate/thanks'); // spam bot filled the hidden field
+    if (form.website) { security.logSpam(req, 'estimate', 'honeypot', form); return res.redirect('/estimate/thanks'); } // a bot filled the hidden field
+    if (security.tooMany(req)) { security.logSpam(req, 'estimate', 'too_many', form); return fail('We’ve received several requests from you in a short time. Please wait a few minutes, or give us a call.'); }
     const name = (form.name || '').trim();
     if (!name || !form.phone || !form.email || !form.address || !form.service) return fail('Please fill in all the required fields.');
     try {
@@ -78,7 +80,8 @@ router.post('/commercial', (req, res, next) => {
     const form = req.body || {};
     const fail = (msg) => commercialPage(res, form, msg, 400);
     if (err) return fail(err.code === 'LIMIT_FILE_SIZE' ? 'One of the photos is too large (10 MB max each).' : 'We couldn’t upload those photos. Please try again with up to 8 images.');
-    if (form.website) return res.redirect('/estimate/thanks');
+    if (form.website) { security.logSpam(req, 'commercial', 'honeypot', form); return res.redirect('/estimate/thanks'); } // a bot filled the hidden field
+    if (security.tooMany(req)) { security.logSpam(req, 'commercial', 'too_many', form); return fail('We’ve received several requests from you in a short time. Please wait a few minutes, or give us a call.'); }
     const services = [].concat(form.services || []).filter((s) => typeof s === 'string').map((s) => s.slice(0, 80));
     const name = (form.name || '').trim(), company = (form.company || '').trim();
     if (!name || !company || !form.phone || !form.email || !form.address || !form.property_type) return fail('Please fill in all the required fields.');
@@ -115,7 +118,8 @@ router.post('/careers', (req, res, next) => {
     const form = req.body || {};
     const fail = (msg) => careersPage(res, form, msg, 400);
     if (err) return fail(err.code === 'LIMIT_FILE_SIZE' ? 'That file is too large (10 MB max).' : 'We couldn’t attach that file. Try a PDF, Word document or photo.');
-    if (form.website) return res.redirect('/careers/thanks');
+    if (form.website) { security.logSpam(req, 'careers', 'honeypot', form); return res.redirect('/careers/thanks'); } // a bot filled the hidden field
+    if (security.tooMany(req)) { security.logSpam(req, 'careers', 'too_many', form); return fail('We’ve received several requests from you in a short time. Please wait a few minutes, or give us a call.'); }
     const name = (form.name || '').trim();
     if (!name || !form.phone || !form.email || !form.position) return fail('Please fill in all the required fields.');
     try {

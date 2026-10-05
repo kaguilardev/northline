@@ -24,11 +24,11 @@
     <% if (!clients.length) { %><tr><td colspan="5" class="muted center"><%= prospects ? 'No prospects right now.' : 'No customers yet. People show up here once they accept a quote or you book a job.' %></td></tr><% } %>
     <% clients.forEach(c => { %>
       <tr onclick="location='/admin/clients/<%= c.id %>'">
-        <td><strong><%= c.name %></strong><div class="muted small"><%= c.address || '' %></div></td>
+        <td><strong><span translate="no"><%= c.name %></span></strong><div class="muted small"><span translate="no"><%= c.address || '' %></span></div></td>
         <td><%= c.service || '—' %></td>
         <td><span class="pill <%= c.status %>"><%= c.status.replace('_',' ') %></span></td>
         <td><%= c.next_visit ? new Date(c.next_visit).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
-        <td class="small"><%= c.email || '' %><br><%= c.phone || '' %></td>
+        <td class="small"><span translate="no"><%= c.email || '' %></span><br><span translate="no"><%= c.phone || '' %></span></td>
       </tr>
     <% }) %>
     </tbody>

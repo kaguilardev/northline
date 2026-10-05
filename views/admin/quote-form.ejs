@@ -4,7 +4,7 @@
   <div><a href="<%= isEdit ? '/admin/quotes/' + quote.id : '/admin/quotes' %>" class="muted small">← Back</a><h1 style="margin-top:6px"><%= isEdit ? 'Edit ' + quote.number : 'New quote' %></h1></div>
 </div>
 <% if (fromRequest) { %>
-  <p class="notice">Quoting request from <strong><%= fromRequest.name %></strong> — <%= fromRequest.service %>. <a href="/admin/requests/<%= fromRequest.id %>" target="_blank">View photos ↗</a>
+  <p class="notice">Quoting request from <strong><span translate="no"><%= fromRequest.name %></span></strong> — <%= fromRequest.service %>. <a href="/admin/requests/<%= fromRequest.id %>" target="_blank">View photos ↗</a>
   <% if (fromRequest.description) { %><br><span class="small"><%= fromRequest.description %></span><% } %></p>
 <% } %>
 <form method="post" action="/admin/quotes<%= isEdit ? '/' + quote.id : '' %>" id="qform" class="grid2 wide-left" style="align-items:start">
@@ -15,7 +15,7 @@
         <label class="span2">Customer
           <select name="client_id" id="clientSel">
             <option value="">+ New customer…</option>
-            <% clients.forEach(c => { %><option value="<%= c.id %>" <%= String(quote.client_id) === String(c.id) ? 'selected' : '' %>><%= c.name %><%= c.email ? ' — ' + c.email : '' %></option><% }) %>
+            <% clients.forEach(c => { %><option value="<%= c.id %>" <%= String(quote.client_id) === String(c.id) ? 'selected' : '' %>><span translate="no"><%= c.name %></span><span translate="no"><%= c.email ? ' — ' + c.email : '' %></span></option><% }) %>
           </select>
         </label>
       </div>

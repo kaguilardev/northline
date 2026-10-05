@@ -10,7 +10,7 @@
 <section class="section">
   <div class="container grid" style="gap:28px">
     <% const details = {
-      landscaping: { list: ['Recurring mowing, trimming, edging & blowing', 'Leaf and yard cleanups', 'Packages from $49 per visit'], cta: 'See lawn care pricing' },
+      landscaping: { list: ['Recurring mowing, trimming, edging & blowing', 'Leaf and yard cleanups', 'Packages from ' + money(lawnPackages[0].from) + ' per visit'], cta: 'See lawn care pricing' },
       painting: { list: ['Interior & exterior painting', 'Trim, doors and cabinets', 'Deck & fence staining'], cta: 'See painting pricing' },
       pressure: { list: ['Driveways, sidewalks & walkways', 'Patios, decks & outdoor furniture', 'Trash bin cleaning'], cta: 'See pressure washing pricing' },
       remodeling: { list: ['Interior updates and repairs', 'Drywall patching and prep', 'Custom quote for every project'], cta: 'Request a remodeling estimate' },

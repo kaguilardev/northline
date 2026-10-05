@@ -7,8 +7,8 @@
     <% if (!quotes.length) { %><tr><td colspan="6" class="muted center">No quotes yet. Start one from a request or click “New quote”.</td></tr><% } %>
     <% quotes.forEach(q => { %>
       <tr onclick="location='/admin/quotes/<%= q.id %>'">
-        <td><strong><%= q.number %></strong></td>
-        <td><%= q.client_name || '—' %></td>
+        <td><strong><span translate="no"><%= q.number %></span></strong></td>
+        <td><span translate="no"><%= q.client_name || '—' %></span></td>
         <td><%= q.title || '—' %></td>
         <td class="money"><%= money(q.total) %></td>
         <td><span class="pill <%= q.status %>"><%= q.status === 'sent' ? 'awaiting customer' : q.status %></span></td>
