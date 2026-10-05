@@ -5,7 +5,7 @@ const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const helmet = require('helmet');
 const db = require('./db');
-const { bootstrapAdmin } = require('./lib/auth');
+const { bootstrapAdmin, refreshUser, STAFF } = require('./lib/auth');
 const pricing = require('./lib/pricing');
 const icon = require('./lib/icons');
 
@@ -52,8 +52,12 @@ app.locals.paintAddons = pricing.PAINT_ADDONS;
 app.locals.pressureSurfaces = pricing.PRESSURE_SURFACES;
 app.locals.contact = { phone: process.env.BUSINESS_PHONE || '', email: process.env.BUSINESS_EMAIL || '' };
 
+app.use(refreshUser);
 app.use((req, res, next) => {
-  res.locals.admin = req.session.admin || null;
+  const user = req.session.user || null;
+  res.locals.user = user;
+  res.locals.admin = user && STAFF.includes(user.role) ? user : null; // office screens
+  res.locals.isOwner = !!(user && user.role === 'owner');
   res.locals.path = req.path;
   res.locals.business = process.env.BUSINESS_NAME || 'Northline Home & Outdoor';
   next();
@@ -61,7 +65,7 @@ app.use((req, res, next) => {
 
 // Badge in the admin menu: estimate requests nobody has opened yet
 app.use('/admin', async (req, res, next) => {
-  if (!req.session.admin) return next();
+  if (!res.locals.admin) return next();
   try {
     const { rows } = await db.query(`SELECT (SELECT count(*)::int FROM nl_requests WHERE viewed_at IS NULL) AS r,
       (SELECT count(*)::int FROM nl_applications WHERE viewed_at IS NULL) AS a`);
@@ -75,6 +79,9 @@ app.use(require('./routes/public'));
 app.use(require('./routes/admin'));
 app.use(require('./routes/ops'));
 app.use(require('./routes/applicants'));
+app.use(require('./routes/team'));
+app.use(require('./routes/schedule'));
+app.use(require('./routes/crew'));
 
 app.use((req, res) => res.status(404).render('error', { message: 'Page not found.' }));
 app.use((err, req, res, next) => {

@@ -1,0 +1,41 @@
+<%- include('../partials/head') %>
+<div class="pagehead"><div><a href="/admin/team" class="muted small">← Team</a><h1 style="margin-top:6px"><%= u.name || u.email %> <span class="pill role-<%= u.role %>" style="vertical-align:middle"><%= roles.find(r => r.key === u.role).label %></span></h1></div></div>
+<% if (flash) { %><p class="<%= /fail|has to|off/.test(flash) ? 'notice' : 'success' %>"><%= flash %></p><% } %>
+<% if (link) { %>
+  <section class="card linkbox">
+    <h2><%= link.fresh ? 'Added! Now send them their sign-in link' : 'New sign-in link' %></h2>
+    <p class="muted small" style="margin-top:0">Works once, expires in 7 days. <strong>This is the only time it’s shown</strong> — copy it now.</p>
+    <div class="copy"><input id="ilink" value="<%= link.url %>" readonly><button type="button" class="btn ghost small" onclick="navigator.clipboard.writeText(document.getElementById('ilink').value);this.textContent='Copied'">Copy</button></div>
+    <div class="row" style="margin-top:10px">
+      <% if (u.phone) { %><a class="btn small" href="sms:<%= u.phone %>?&body=<%= encodeURIComponent('Hi ' + (u.name || '').split(' ')[0] + ', here’s your link to set up the Northline team app: ' + link.url) %>">Text it to <%= u.phone %></a><% } %>
+    </div>
+  </section>
+<% } %>
+<div class="grid2 wide-left" style="align-items:start;margin-top:18px">
+  <form class="card form" method="post" action="/admin/team/<%= u.id %>">
+    <label>Name <input name="name" value="<%= u.name || '' %>"></label>
+    <label>Email <input value="<%= u.email %>" disabled></label>
+    <label>Mobile <input type="tel" name="phone" value="<%= u.phone || '' %>"></label>
+    <label>Role
+      <select name="role" <%= isSelf ? 'disabled' : '' %>><% roles.forEach(r => { %><option value="<%= r.key %>" <%= u.role === r.key ? 'selected' : '' %>><%= r.label %> — <%= r.hint %></option><% }) %></select>
+      <% if (isSelf) { %><small class="muted">You can’t change your own role.</small><% } %></label>
+    <label class="check"><input type="checkbox" name="active" <%= u.active ? 'checked' : '' %> <%= isSelf ? 'disabled' : '' %>> Can sign in <small class="muted">— untick to switch off their access right away</small></label>
+    <button class="btn">Save</button>
+  </form>
+  <section class="card">
+    <h2>Sign-in</h2>
+    <dl class="facts">
+      <dt>Password</dt><dd><%= u.has_password ? 'Set' : 'Not set yet' %></dd>
+      <dt>Last sign-in</dt><dd><%= u.last_login_at ? new Date(u.last_login_at).toLocaleString('en-US') : 'Never' %></dd>
+      <% if (u.invite_open) { %><dt>Open link</dt><dd>Expires <%= fmtDate(u.invite_expires) %></dd><% } %>
+    </dl>
+    <p class="muted small">Not set up yet, or forgot their password? Send a new link — it replaces any older one.</p>
+    <% if (u.active) { %>
+    <form method="post" action="/admin/team/<%= u.id %>/link" class="row">
+      <button class="btn small gold" name="via" value="link">Make new link</button>
+      <button class="btn small ghost" name="via" value="email" <%= emailEnabled ? '' : 'disabled title="Email sending is off"' %>>Email new link</button>
+    </form>
+    <% } %>
+  </section>
+</div>
+<%- include('../partials/foot') %>

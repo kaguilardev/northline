@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db');
-const { requireAdmin, verifyLogin } = require('../lib/auth');
+const { requireAdmin, verifyLogin, findInvite, acceptInvite, STAFF } = require('../lib/auth');
 const specials = require('../lib/specials');
 const { sendBulk, renderEmail } = require('../lib/email');
 const { CLIENT_STATUSES: STATUSES, CUSTOMER_STATUSES, PROSPECT, REQ_STAGES } = require('../lib/pipeline');
@@ -8,20 +8,24 @@ const { CLIENT_STATUSES: STATUSES, CUSTOMER_STATUSES, PROSPECT, REQ_STAGES } = r
 const router = express.Router();
 
 // ---------- Login ----------
+const homeFor = (u) => (STAFF.includes(u.role) ? '/admin' : '/crew');
+
 router.get('/login', (req, res) => {
-  if (req.session.admin) return res.redirect('/admin');
+  if (req.session.user) return res.redirect(homeFor(req.session.user));
   res.render('login', { error: null, email: '' });
 });
 
 router.post('/login', async (req, res, next) => {
   try {
     const { email = '', password = '' } = req.body;
-    const admin = await verifyLogin(email.trim(), password);
-    if (!admin) return res.status(401).render('login', { error: 'That email and password don\'t match.', email });
-    const returnTo = req.session.returnTo || '/admin';
+    const user = await verifyLogin(email.trim(), password);
+    if (!user) return res.status(401).render('login', { error: 'That email and password don\'t match.', email });
+    // Only send people back to a page their role can open
+    const wanted = req.session.returnTo || '';
+    const returnTo = wanted.startsWith(homeFor(user)) ? wanted : homeFor(user);
     req.session.regenerate((err) => {
       if (err) return next(err);
-      req.session.admin = admin;
+      req.session.user = user;
       res.redirect(returnTo);
     });
   } catch (e) { next(e); }
@@ -29,6 +33,32 @@ router.post('/login', async (req, res, next) => {
 
 router.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
+});
+
+// ---------- Set a password from an invite / reset link ----------
+router.get('/invite/:token', async (req, res, next) => {
+  try {
+    const u = await findInvite(req.params.token);
+    res.render('invite', { u, token: req.params.token, error: null });
+  } catch (e) { next(e); }
+});
+
+router.post('/invite/:token', async (req, res, next) => {
+  try {
+    const u = await findInvite(req.params.token);
+    const { password = '', confirm = '' } = req.body;
+    const fail = (error) => res.status(400).render('invite', { u, token: req.params.token, error });
+    if (!u) return fail(null);
+    if (password.length < 10) return fail('Use at least 10 characters.');
+    if (password !== confirm) return fail('The two passwords don’t match.');
+    const user = await acceptInvite(req.params.token, password);
+    if (!user) return fail(null);
+    req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.user = user;
+      res.redirect(homeFor(user));
+    });
+  } catch (e) { next(e); }
 });
 
 // Everything below needs an admin login
@@ -188,7 +218,7 @@ router.post('/admin/email', async (req, res, next) => {
     const result = await sendBulk({ subject, heading: heading || subject, body, recipients });
     await db.query(
       `INSERT INTO nl_email_log (subject, recipients, special_id, status, sent_by) VALUES ($1,$2,$3,$4,$5)`,
-      [subject, result.sent, special_id || null, result.preview ? 'preview' : (result.errors.length ? 'partial' : 'sent'), req.session.admin.email]);
+      [subject, result.sent, special_id || null, result.preview ? 'preview' : (result.errors.length ? 'partial' : 'sent'), req.session.user.email]);
     const saved = await db.query('SELECT * FROM nl_specials ORDER BY created_at DESC');
     const all = await audience('');
     res.render('email', { saved: saved.rows, draft: req.body, audienceCount: all.length, statuses: STATUSES,

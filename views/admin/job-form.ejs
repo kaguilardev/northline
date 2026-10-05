@@ -34,7 +34,14 @@
       <h2><span class="stepn">2</span>Schedule</h2>
       <div class="cols">
         <label>Date of the job <input type="date" name="job_date" value="<%= d(job.job_date) %>"></label>
-        <label>Crew <small class="muted">— who’s working it</small><input name="employees" value="<%= job.employees || '' %>" placeholder="e.g. Marcus, Dee"></label>
+        <label>Start time <small class="muted">— optional</small><input type="time" name="start_time" value="<%= job.start_time ? String(job.start_time).slice(0,5) : '' %>"></label>
+        <fieldset class="span2 crew-pick"><legend>Crew <small class="muted">— they’ll see this job on their phone</small></legend>
+          <% if (!team.length) { %><p class="muted small">No team members yet. <a href="/admin/team">Add your crew</a> so you can assign them.</p><% } %>
+          <div class="crew-grid">
+            <% team.forEach(t => { %><label class="check"><input type="checkbox" name="crew" value="<%= t.id %>" <%= crewIds.includes(t.id) ? 'checked' : '' %>> <%= t.name || t.email %><% if (t.role !== 'crew') { %> <small class="muted">(<%= t.role %>)</small><% } %></label><% }) %>
+          </div>
+          <% if (job.employees && !crewIds.length) { %><p class="muted small" style="margin:6px 0 0">Previously noted: <%= job.employees %></p><% } %>
+        </fieldset>
         <label class="span2">Where it stands
           <select name="status"><% JOB_STATUSES.forEach(s => { %><option value="<%= s %>" <%= job.status === s ? 'selected' : '' %>><%= { scheduled: 'Scheduled — booked, not started', in_progress: 'In progress — crew is on it', completed: 'Completed — work is done', cancelled: 'Cancelled' }[s] %></option><% }) %></select></label>
       </div>

@@ -14,6 +14,23 @@ Built with Node.js, Express, PostgreSQL and Resend. Hosted on Render.
 
 Nothing you do locally affects the live site until you publish.
 
+## Test database (local work)
+
+`npm run dev` (and **Start Local Preview.command**) starts a private test database in `.testdb/` when `.env` points at `127.0.0.1:5433`. Nothing you do locally touches real customers or logins.
+
+- Fill it with demo data and demo sign-ins (owner, admin, two crew): `npm run seed:test` — the demo logins are listed at the top of `scripts/seed-test.js`.
+- To work against live data instead, swap the two `DATABASE_URL` lines in `.env`.
+
+## Team accounts and roles
+
+| Role | Can see |
+| --- | --- |
+| Owner | Everything, plus the **Team** page (add people, change roles, switch off access) |
+| Admin | Requests, quotes, jobs, schedule, clients, applicants, email — not the Team page |
+| Crew | Only **My schedule** at `/crew`: their own jobs, addresses, notes, photos. Never prices. |
+
+Add people on **Team → Add someone**. You get a one-time link (shown once, valid 7 days) to text or email them; they choose their own password. Forgot password? Make them a new link.
+
 ## Publish to the live site
 
 Double-click **Publish to Live.command**. It commits your changes, pushes to GitHub, and Render redeploys automatically in a couple of minutes.
@@ -29,7 +46,7 @@ Double-click **Publish to Live.command**. It commits your changes, pushes to Git
 | `RESEND_API_KEY` | From resend.com. Leave blank to preview emails without sending |
 | `EMAIL_FROM` | e.g. `Northline Landscaping <hello@yourdomain.com>` (domain must be verified in Resend) |
 
-Add another admin: `npm run admin:create -- name@example.com "password"`
+Add an account from the command line: `npm run admin:create -- name@example.com "password" [owner|admin|crew]`
 
 ## Database
 

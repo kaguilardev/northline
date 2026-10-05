@@ -1,0 +1,32 @@
+<%- include('../partials/head') %>
+<% const t = (v) => { if (!v) return ''; const [h, m] = String(v).split(':'); const H = +h; return (H % 12 || 12) + ':' + m + (H < 12 ? ' AM' : ' PM'); };
+   const dayName = (d) => new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' });
+   const card = (j) => `
+   <a class="jobcard ${j.status}" href="/crew/jobs/${j.id}">
+     <div class="when">${j.job_date ? dayName(j.job_date) : 'Date TBD'}${j.start_time ? ' · ' + t(j.start_time) : ''}</div>
+     <div class="who">${esc(j.client_name || 'Customer')}</div>
+     <div class="what">${esc([j.service, j.package].filter(Boolean).join(' — '))}</div>
+     ${j.address ? `<div class="where">📍 ${esc(j.address)}</div>` : ''}
+     <div class="foot"><span class="pill ${j.status}">${j.status.replace('_', ' ')}</span>${j.crew ? `<span class="muted small">👥 ${esc(j.crew)}</span>` : ''}</div>
+   </a>`;
+   function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); } %>
+<div class="crew-wrap">
+  <h1 class="crew-h">Hi<%= user.name ? ', ' + user.name.split(' ')[0] : '' %> 👋</h1>
+  <section>
+    <h2 class="crew-sec">Today</h2>
+    <% if (!groups.today.length) { %><p class="empty-note">Nothing on the schedule for today.</p><% } %>
+    <% groups.today.forEach(j => { %><%- card(j) %><% }) %>
+  </section>
+  <section>
+    <h2 class="crew-sec">Coming up</h2>
+    <% if (!groups.upcoming.length) { %><p class="empty-note">No upcoming jobs yet.</p><% } %>
+    <% groups.upcoming.forEach(j => { %><%- card(j) %><% }) %>
+  </section>
+  <% if (groups.unscheduled.length) { %>
+  <section><h2 class="crew-sec">Date not set yet</h2><% groups.unscheduled.forEach(j => { %><%- card(j) %><% }) %></section>
+  <% } %>
+  <% if (groups.done.length) { %>
+  <section><h2 class="crew-sec">Finished this week</h2><% groups.done.forEach(j => { %><%- card(j) %><% }) %></section>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

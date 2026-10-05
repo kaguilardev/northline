@@ -1,13 +1,15 @@
 {
   "name": "northline",
   "version": "1.0.0",
-  "description": "Northline Landscaping — admin portal for clients, specials and email",
+  "description": "Northline Landscaping \u2014 admin portal for clients, specials and email",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon --watch . --ext js,ejs,css,sql server.js",
+    "dev": "node scripts/dev.mjs",
     "db:init": "node scripts/init-db.js",
-    "admin:create": "node scripts/create-admin.js"
+    "admin:create": "node scripts/create-admin.js",
+    "db:test": "node scripts/test-db.mjs",
+    "seed:test": "node scripts/seed-test.js"
   },
   "engines": {
     "node": ">=20"
@@ -26,6 +28,7 @@
     "resend": "^4.0.1"
   },
   "devDependencies": {
+    "embedded-postgres": "^17.5.0-beta.15",
     "nodemon": "^3.1.7"
   }
 }

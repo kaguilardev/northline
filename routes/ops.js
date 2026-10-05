@@ -7,7 +7,7 @@ const { requireAdmin } = require('../lib/auth');
 const { upload, savePhotos, listPhotos } = require('../lib/photos');
 const { sendQuote, sendMessage, enabled: emailEnabled } = require('../lib/email');
 const { quotePdf } = require('../lib/quote-pdf');
-const { REQ_STAGES, REQ_STATUSES, ACTIVE, ARCHIVED, markQuoteAccepted } = require('../lib/pipeline');
+const { REQ_STAGES, REQ_STATUSES, ACTIVE, ARCHIVED, markQuoteAccepted, syncClientFromJob } = require('../lib/pipeline');
 const { baseUrl } = require('./public');
 
 const router = express.Router();
@@ -17,6 +17,11 @@ const JOB_STATUSES = ['scheduled', 'in_progress', 'completed', 'cancelled'];
 const PAY_STATUSES = ['unpaid', 'deposit', 'paid'];
 const SERVICE_TYPES = ['Lawn Care', 'Yard Cleanup', 'Pressure Washing', 'Painting', 'Remodeling', 'Decks & Fences', 'Other'];
 const num = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
+
+// Everyone who can be put on a job (crew first)
+async function teamList() {
+  return (await db.query(`SELECT id, name, email, role FROM nl_admins WHERE active ORDER BY role='crew' DESC, name`)).rows;
+}
 
 async function clientsList() {
   return (await db.query('SELECT id, name, email, phone, address FROM nl_clients ORDER BY name')).rows;
@@ -95,7 +100,7 @@ router.post('/admin/requests/:id/message', async (req, res, next) => {
       if (sent.preview) return go('Email sending is off (RESEND_API_KEY isn’t set), so nothing was sent.');
     } catch (e) { return go(`Email failed: ${e.message}`); }
     await db.query(`INSERT INTO nl_messages (request_id, client_id, direction, to_email, subject, body, sent_by) VALUES ($1,$2,'out',$3,$4,$5,$6)`,
-      [r.id, r.client_id, r.email, subject, body, req.session.admin.email]);
+      [r.id, r.client_id, r.email, subject, body, req.session.user.email]);
     if (r.status === 'new') await db.query(`UPDATE nl_requests SET status='lead' WHERE id=$1`, [r.id]);
     go(`Email sent to ${r.email}.`);
   } catch (e) { next(e); }
@@ -228,7 +233,7 @@ router.post('/admin/quotes/:id/send', async (req, res, next) => {
           flash = r.preview ? 'Email sending is off (no RESEND_API_KEY). Marked as sent — copy the link instead.' : `Estimate emailed to ${quote.client_email}.`;
           if (!r.preview && quote.request_id) {
             await db.query(`INSERT INTO nl_messages (request_id, client_id, direction, to_email, subject, body, sent_by) VALUES ($1,$2,'out',$3,$4,$5,$6)`,
-              [quote.request_id, quote.client_id, quote.client_email, `Your estimate — ${quote.number}`, `Estimate ${quote.number} (${pricing.money(quote.total)}) emailed with a link to review and accept it.`, req.session.admin.email]);
+              [quote.request_id, quote.client_id, quote.client_email, `Your estimate — ${quote.number}`, `Estimate ${quote.number} (${pricing.money(quote.total)}) emailed with a link to review and accept it.`, req.session.user.email]);
           }
         } catch (e) { flash = `Email failed: ${e.message}`; }
       }
@@ -290,7 +295,7 @@ router.get('/admin/jobs/new', async (req, res, next) => {
         job = blankJob({ client_id: q.client_id, quote_id: q.id, quoted_price: q.total, package: q.title || (first ? first.label : '') });
       }
     }
-    res.render('admin/job-form', { title: 'New job', job, photos: [], clients: await clientsList(), JOB_STATUSES, PAY_STATUSES, SERVICE_TYPES });
+    res.render('admin/job-form', { title: 'New job', job, crewIds: [], team: await teamList(), photos: [], clients: await clientsList(), JOB_STATUSES, PAY_STATUSES, SERVICE_TYPES });
   } catch (e) { next(e); }
 });
 
@@ -298,7 +303,8 @@ router.get('/admin/jobs/:id', async (req, res, next) => {
   try {
     const job = (await db.query('SELECT * FROM nl_jobs WHERE id=$1', [req.params.id])).rows[0];
     if (!job) return res.status(404).render('error', { message: 'Job not found.' });
-    res.render('admin/job-form', { title: 'Job', job, photos: await listPhotos('job', job.id), clients: await clientsList(), JOB_STATUSES, PAY_STATUSES, SERVICE_TYPES });
+    const crewIds = (await db.query('SELECT user_id FROM nl_job_crew WHERE job_id=$1', [job.id])).rows.map((r) => r.user_id);
+    res.render('admin/job-form', { title: 'Job', job, crewIds, team: await teamList(), photos: await listPhotos('job', job.id), clients: await clientsList(), JOB_STATUSES, PAY_STATUSES, SERVICE_TYPES });
   } catch (e) { next(e); }
 });
 
@@ -309,8 +315,12 @@ function saveJob(id) {
     if (err) return next(err);
     try {
       const b = req.body;
+      // Crew picked from the team list; their names are also kept in `employees` for lists and the dashboard
+      const crewIds = [].concat(b.crew || []).map(Number).filter(Boolean);
+      const crew = crewIds.length ? (await db.query('SELECT id, name, email FROM nl_admins WHERE id = ANY($1)', [crewIds])).rows : [];
+      const employees = crew.map((c) => (c.name || c.email).split(' ')[0]).join(', ') || null;
       const vals = [num(b.client_id), num(b.quote_id), b.service || null, (b.package || '').trim() || null, num(b.quoted_price),
-        num(b.materials_cost), num(b.labor_hours), (b.employees || '').trim() || null, b.job_date || null,
+        num(b.materials_cost), num(b.labor_hours), employees, b.job_date || null,
         JOB_STATUSES.includes(b.status) ? b.status : 'scheduled', PAY_STATUSES.includes(b.payment_status) ? b.payment_status : 'unpaid',
         num(b.actual_cost), ((r) => (r >= 1 && r <= 5 ? Math.round(r) : null))(num(b.review_rating)), (b.customer_review || '').trim() || null, b.show_in_gallery === 'on', (b.notes || '').trim() || null];
       let jobId = id;
@@ -324,13 +334,12 @@ function saveJob(id) {
           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id`, vals);
         jobId = rows[0].id;
       }
+      await db.query('UPDATE nl_jobs SET start_time=$1 WHERE id=$2', [/^\d{2}:\d{2}$/.test(b.start_time || '') ? b.start_time : null, jobId]);
+      await db.query('DELETE FROM nl_job_crew WHERE job_id=$1', [jobId]);
+      for (const c of crew) await db.query('INSERT INTO nl_job_crew (job_id, user_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [jobId, c.id]);
       await savePhotos('job', jobId, (req.files && req.files.before) || [], 'before');
       await savePhotos('job', jobId, (req.files && req.files.after) || [], 'after');
-      if (vals[0] && vals[8]) {
-        // keep the client's status board in sync
-        const clientStatus = { scheduled: 'scheduled', in_progress: 'in_progress', completed: 'completed' }[vals[9]];
-        if (clientStatus) await db.query('UPDATE nl_clients SET status=$1, next_visit=$2, updated_at=now() WHERE id=$3', [clientStatus, vals[9] === 'completed' ? null : vals[8], vals[0]]);
-      }
+      await syncClientFromJob(vals[0], vals[9], vals[8]);
       res.redirect(`/admin/jobs/${jobId}`);
     } catch (e) { next(e); }
   });

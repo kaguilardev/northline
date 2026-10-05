@@ -1,0 +1,45 @@
+<%- include('../partials/head') %>
+<% const t = (v) => { if (!v) return ''; const [h, m] = String(v).split(':'); const H = +h; return (H % 12 || 12) + ':' + m + (H < 12 ? ' AM' : ' PM'); }; %>
+<div class="crew-wrap">
+  <a href="/crew" class="muted small">← My schedule</a>
+  <% if (flash) { %><p class="success" style="margin-top:12px"><%= flash %></p><% } %>
+  <h1 class="crew-h" style="margin-top:10px"><%= job.client_name || 'Customer' %></h1>
+  <p class="crew-when"><%= job.job_date ? new Date(job.job_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' }) : 'Date not set yet' %><%= job.start_time ? ' · ' + t(job.start_time) : '' %></p>
+  <span class="pill big <%= job.status %>"><%= job.status.replace('_', ' ') %></span>
+
+  <div class="bigbtns">
+    <% if (job.address) { %><a class="btn gold" href="https://maps.apple.com/?daddr=<%= encodeURIComponent(job.address) %>" target="_blank">📍 Directions</a><% } %>
+    <% if (job.phone) { %><a class="btn ghost" href="tel:<%= job.phone %>">📞 Call customer</a><% } %>
+  </div>
+
+  <section class="card">
+    <dl class="facts">
+      <dt>Address</dt><dd><%= job.address || '—' %></dd>
+      <dt>Work</dt><dd><strong><%= job.service || '—' %></strong><% if (job.package) { %><br><%= job.package %><% } %></dd>
+      <dt>Crew</dt><dd><%= job.crew || '—' %></dd>
+      <% if (job.notes) { %><dt>Notes</dt><dd style="white-space:pre-line"><%= job.notes %></dd><% } %>
+    </dl>
+  </section>
+
+  <% if (job.status === 'scheduled' || job.status === 'in_progress') { %>
+  <form method="post" action="/crew/jobs/<%= job.id %>/status" style="margin-top:16px">
+    <% if (job.status === 'scheduled') { %><button class="btn full xl" name="status" value="in_progress">▶ Start job</button><% } %>
+    <% if (job.status === 'in_progress') { %><button class="btn gold full xl" name="status" value="completed" onclick="return confirm('Mark this job complete?')">✓ Mark complete</button><% } %>
+  </form>
+  <% } %>
+
+  <section class="card" style="margin-top:16px">
+    <h2>Photos</h2>
+    <div class="photos"><% photos.forEach(p => { %><div class="photo-cell"><a href="/photo/<%= p.id %>" target="_blank"><img src="/photo/<%= p.id %>" alt="" loading="lazy"><span class="tag"><%= p.kind %></span></a></div><% }) %></div>
+    <% if (!photos.length) { %><p class="muted small" style="margin-top:0">No photos yet.</p><% } %>
+    <form method="post" action="/crew/jobs/<%= job.id %>/photos" enctype="multipart/form-data" class="form" style="margin-top:12px">
+      <div class="seg" role="group" aria-label="Photo type" style="margin-bottom:10px">
+        <label class="seg-opt"><input type="radio" name="kind" value="before" <%= job.status === 'scheduled' ? 'checked' : '' %>> Before</label>
+        <label class="seg-opt"><input type="radio" name="kind" value="after" <%= job.status !== 'scheduled' ? 'checked' : '' %>> After</label>
+      </div>
+      <input type="file" name="photos" accept="image/*" multiple required>
+      <button class="btn full" style="margin-top:10px">Upload photos</button>
+    </form>
+  </section>
+</div>
+<%- include('../partials/foot') %>

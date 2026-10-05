@@ -139,11 +139,14 @@ router.get('/careers/thanks', (req, res) => res.render('site/thanks', { name: re
 // ---------- Photos ----------
 router.get('/photo/:id', async (req, res, next) => {
   try {
+    const user = (req.session && req.session.user) || null;
     const { rows } = await db.query(`
-      SELECT p.mime, p.data, p.owner_type, j.show_in_gallery
-      FROM nl_photos p LEFT JOIN nl_jobs j ON p.owner_type='job' AND j.id=p.owner_id WHERE p.id=$1`, [req.params.id]);
+      SELECT p.mime, p.data, p.owner_type, j.show_in_gallery,
+        EXISTS (SELECT 1 FROM nl_job_crew jc WHERE jc.job_id=j.id AND jc.user_id=$2) AS on_crew
+      FROM nl_photos p LEFT JOIN nl_jobs j ON p.owner_type='job' AND j.id=p.owner_id WHERE p.id=$1`, [req.params.id, user ? user.id : null]);
     const p = rows[0];
-    const isAdmin = !!(req.session && req.session.admin);
+    // Office staff see every photo; crew see photos on their own jobs; the public sees gallery photos only
+    const isAdmin = !!(user && ['owner', 'admin'].includes(user.role)) || !!(p && p.on_crew);
     if (!p || (!isAdmin && !(p.owner_type === 'job' && p.show_in_gallery))) return res.status(404).send('Not found');
     res.set('Content-Type', p.mime);
     res.set('Cache-Control', isAdmin ? 'private, max-age=3600' : 'public, max-age=86400');

@@ -80,9 +80,6 @@ ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'res
 ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS company TEXT;
 ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS property_type TEXT;
 ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS frequency TEXT;
--- Anyone who has accepted a quote is a customer, not a lead
-UPDATE nl_clients c SET status='scheduled' WHERE status IN ('lead','quoted')
-  AND EXISTS (SELECT 1 FROM nl_quotes q WHERE q.client_id=c.id AND q.status='accepted');
 
 -- ── Quotes / estimates ──
 CREATE TABLE IF NOT EXISTS nl_quotes (
@@ -181,3 +178,29 @@ CREATE TABLE IF NOT EXISTS nl_applications (
   viewed_at      TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ── Roles: owner (everything), admin (day-to-day office work), crew (own schedule only) ──
+ALTER TABLE nl_admins ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'owner';
+ALTER TABLE nl_admins DROP CONSTRAINT IF EXISTS nl_admins_role_check;
+ALTER TABLE nl_admins ADD CONSTRAINT nl_admins_role_check CHECK (role IN ('owner','admin','crew'));
+ALTER TABLE nl_admins ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE nl_admins ALTER COLUMN password_hash DROP NOT NULL; -- new team members set theirs from a sign-in link
+ALTER TABLE nl_admins ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE nl_admins ADD COLUMN IF NOT EXISTS invite_token TEXT;
+ALTER TABLE nl_admins ADD COLUMN IF NOT EXISTS invite_expires TIMESTAMPTZ;
+ALTER TABLE nl_admins ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+CREATE UNIQUE INDEX IF NOT EXISTS nl_admins_invite_idx ON nl_admins (invite_token) WHERE invite_token IS NOT NULL;
+
+-- ── Crew assigned to each job, and a start time for the schedule ──
+ALTER TABLE nl_jobs ADD COLUMN IF NOT EXISTS start_time TIME;
+CREATE TABLE IF NOT EXISTS nl_job_crew (
+  job_id   INTEGER NOT NULL REFERENCES nl_jobs(id) ON DELETE CASCADE,
+  user_id  INTEGER NOT NULL REFERENCES nl_admins(id) ON DELETE CASCADE,
+  PRIMARY KEY (job_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS nl_job_crew_user_idx ON nl_job_crew (user_id);
+
+-- ── One-time data fixes (run last, once every table exists) ──
+-- Anyone who has accepted a quote is a customer, not a lead
+UPDATE nl_clients c SET status='scheduled' WHERE status IN ('lead','quoted')
+  AND EXISTS (SELECT 1 FROM nl_quotes q WHERE q.client_id=c.id AND q.status='accepted');

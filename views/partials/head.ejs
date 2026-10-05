@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Northline">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <title><%= typeof title !== 'undefined' ? title + ' · ' : '' %>Northline Admin</title>
+  <title><%= typeof title !== 'undefined' ? title + ' · ' : '' %>Northline<%= typeof admin !== 'undefined' && admin ? ' Admin' : '' %></title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,17 +18,25 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+<% const signedIn = typeof user !== 'undefined' && user; %>
 <% if (admin) { %>
 <header class="topbar">
-  <a class="brand" href="/admin"><img src="/img/logo-mark-light.png" alt=""><span>Northline<small>Admin</small></span></a>
-  <% const navItems = [['/admin','Dashboard'],['/admin/requests','Requests'],['/admin/quotes','Quotes'],['/admin/jobs','Jobs'],['/admin/clients','Clients'],['/admin/applicants','Applicants'],['/admin/specials','Specials'],['/admin/email','Email']]; %>
+  <a class="brand" href="/admin"><img src="/img/logo-mark-light.png" alt=""><span>Northline<small><%= isOwner ? 'Owner' : 'Admin' %></small></span></a>
+  <% const navItems = [['/admin','Dashboard'],['/admin/schedule','Schedule'],['/admin/requests','Requests'],['/admin/quotes','Quotes'],['/admin/jobs','Jobs'],['/admin/clients','Clients'],['/admin/applicants','Applicants'],['/admin/specials','Specials'],['/admin/email','Email']];
+     if (isOwner) navItems.push(['/admin/team','Team']); %>
   <nav>
     <% navItems.forEach(([href,label]) => { const on = href === '/admin' ? path === '/admin' : path.startsWith(href); %>
       <a href="<%= href %>" class="<%= on ? 'on' : '' %>"><%= label %><% const badge = label === 'Requests' ? (typeof newRequests !== 'undefined' && newRequests) : label === 'Applicants' ? (typeof newApplicants !== 'undefined' && newApplicants) : 0; if (badge) { %> <span class="count"><%= badge %></span><% } %></a>
     <% }) %>
   </nav>
+  <a class="link" href="/crew">My jobs</a>
   <a class="link" href="/" target="_blank">View site ↗</a>
   <form method="post" action="/logout"><button class="link">Sign out</button></form>
 </header>
+<% } else if (signedIn) { %>
+<header class="topbar crewbar">
+  <a class="brand" href="/crew"><img src="/img/logo-mark-light.png" alt=""><span>Northline<small>Crew</small></span></a>
+  <form method="post" action="/logout" style="margin-left:auto"><button class="link">Sign out</button></form>
+</header>
 <% } %>
-<main class="<%= admin ? 'wrap' : '' %>">
+<main class="<%= signedIn ? 'wrap' : '' %>">

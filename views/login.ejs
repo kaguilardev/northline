@@ -2,11 +2,12 @@
 <div class="auth">
   <form method="post" action="/login" class="card">
     <img src="/img/logo.png" alt="Northline Home & Outdoor" style="width:170px;margin:0 auto 18px;display:block">
-    <h1>Admin sign in</h1>
+    <h1>Team sign in</h1>
     <% if (error) { %><p class="alert"><%= error %></p><% } %>
     <label>Email <input type="email" name="email" value="<%= email %>" required autofocus autocomplete="username"></label>
     <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
     <button class="btn full">Sign in</button>
+    <p class="muted small" style="text-align:center;margin:12px 0 0">Forgot your password? Ask the owner for a new sign-in link.</p>
     <a class="muted small" href="/">← Back to site</a>
   </form>
 </div>

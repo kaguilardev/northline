@@ -27,15 +27,14 @@
   <div class="container">
     <a class="logo" href="/" aria-label="Northline Home & Outdoor — home"><img src="/img/logo.png" alt="Northline Home & Outdoor" width="110" height="59"></a>
     <% const svcPaths = ['/services'].concat(services.map(s => s.href.split('#')[0]));
-       const inServices = svcPaths.concat('/commercial').includes(path);
-       const nav = [['/gallery','Gallery'],['/about','About'],['/service-area','Service Area']]; %>
+       const inServices = svcPaths.includes(path);
+       const nav = [['/commercial','For Businesses'],['/gallery','Gallery'],['/about','About'],['/service-area','Service Area']]; %>
     <nav class="mainnav" aria-label="Main">
       <a href="/" class="<%= path === '/' ? 'on' : '' %>">Home</a>
       <div class="dd">
         <button type="button" class="dd-toggle <%= inServices ? 'on' : '' %>" aria-expanded="false" aria-haspopup="true">Services <%- icon('chevron') %></button>
         <div class="dd-menu">
           <% services.forEach(s => { %><a href="<%= s.href %>"><span class="dd-ico"><%- icon(s.icon) %></span><%= s.name %></a><% }) %>
-          <a class="dd-biz" href="/commercial"><span class="dd-ico"><%- icon('building') %></span><span>For businesses<small>Commercial &amp; property managers</small></span></a>
           <a class="dd-all" href="/services">View all services <%- icon('arrow') %></a>
         </div>
       </div>
@@ -48,7 +47,6 @@
         <a href="/">Home</a>
         <div class="m-group">Services</div>
         <% services.forEach(s => { %><a class="m-sub" href="<%= s.href %>"><%= s.name %></a><% }) %>
-        <a class="m-sub" href="/commercial">For businesses</a>
         <a class="m-sub" href="/services">All services</a>
         <% nav.forEach(([href,label]) => { %><a href="<%= href %>"><%= label %></a><% }) %>
         <a class="btn btn-gold" href="/estimate">Get a Free Estimate</a>

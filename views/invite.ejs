@@ -1,0 +1,21 @@
+<%- include('partials/head', { title: 'Set your password' }) %>
+<div class="auth">
+  <form method="post" action="/invite/<%= token %>" class="card">
+    <img src="/img/logo.png" alt="Northline Home & Outdoor" style="width:170px;margin:0 auto 18px;display:block">
+    <% if (!u) { %>
+      <h1>This link has expired</h1>
+      <p class="muted">Sign-in links work once and last 7 days. Ask the owner to send you a new one.</p>
+      <a class="btn full" href="/login" style="text-align:center">Go to sign in</a>
+    <% } else { %>
+      <h1>Welcome<%= u.name ? ', ' + u.name.split(' ')[0] : '' %>!</h1>
+      <p class="muted" style="margin-top:-8px">Choose a password for <strong><%= u.email %></strong>.</p>
+      <% if (error) { %><p class="alert"><%= error %></p><% } %>
+      <input type="email" value="<%= u.email %>" autocomplete="username" hidden>
+      <label>New password <small class="muted">— at least 10 characters</small><input type="password" name="password" required minlength="10" autocomplete="new-password" autofocus></label>
+      <label>Type it again <input type="password" name="confirm" required minlength="10" autocomplete="new-password"></label>
+      <button class="btn full">Save &amp; sign in</button>
+      <p class="muted small" style="text-align:center">On your phone? After signing in, use <strong>Share → Add to Home Screen</strong> to keep Northline like an app.</p>
+    <% } %>
+  </form>
+</div>
+<%- include('partials/foot') %>

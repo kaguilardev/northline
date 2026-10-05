@@ -1,0 +1,43 @@
+<%- include('../partials/head') %>
+<% const t = (v) => { if (!v) return ''; const [h, m] = String(v).split(':'); const H = +h; return (H % 12 || 12) + ':' + m + (H < 12 ? 'a' : 'p'); };
+   const label = (d, o) => new Date(d + 'T00:00:00Z').toLocaleDateString('en-US', Object.assign({ timeZone: 'UTC' }, o));
+   const q = (w) => '/admin/schedule?week=' + w + (person ? '&person=' + person : ''); %>
+<div class="pagehead">
+  <div><h1>Schedule</h1><p class="muted small" style="margin:6px 0 0">Week of <%= label(week, { month: 'long', day: 'numeric' }) %></p></div>
+  <div class="row">
+    <a class="btn ghost small" href="<%= q(prev) %>">← Prev</a>
+    <a class="btn ghost small" href="/admin/schedule<%= person ? '?person=' + person : '' %>">This week</a>
+    <a class="btn ghost small" href="<%= q(next) %>">Next →</a>
+    <a class="btn gold small" href="/admin/jobs/new">+ New job</a>
+  </div>
+</div>
+<form class="filters" method="get">
+  <input type="hidden" name="week" value="<%= week %>">
+  <select name="person" onchange="this.form.submit()" aria-label="Show jobs for">
+    <option value="">Everyone</option>
+    <% team.forEach(m => { %><option value="<%= m.id %>" <%= person === m.id ? 'selected' : '' %>><%= m.name || m.email %></option><% }) %>
+  </select>
+</form>
+<div class="week">
+  <% days.forEach(d => { %>
+  <div class="day <%= d.date === today ? 'today' : '' %>">
+    <div class="dhead"><strong><%= label(d.date, { weekday: 'short' }) %></strong> <%= label(d.date, { month: 'short', day: 'numeric' }) %></div>
+    <% if (!d.jobs.length) { %><div class="dempty">—</div><% } %>
+    <% d.jobs.forEach(j => { %>
+      <a class="sjob <%= j.status %>" href="/admin/jobs/<%= j.id %>">
+        <span class="st"><%= t(j.start_time) || 'Any time' %></span>
+        <strong><%= j.client_name || 'Job #' + j.id %></strong>
+        <span class="small"><%= j.package || j.service || '' %></span>
+        <span class="small <%= j.no_crew ? 'warn' : 'muted' %>"><%= j.no_crew ? '⚠ No crew assigned' : '👥 ' + j.crew %></span>
+      </a>
+    <% }) %>
+  </div>
+  <% }) %>
+</div>
+<% if (unscheduled.length) { %>
+<h2 style="margin-top:28px">Needs a date</h2>
+<div class="card flush"><ul class="list" style="padding:0 16px">
+  <% unscheduled.forEach(j => { %><li><a href="/admin/jobs/<%= j.id %>"><strong><%= j.client_name || 'Job #' + j.id %></strong></a><span class="muted"><%= j.package || j.service || '' %> · <%= j.no_crew ? 'no crew yet' : j.crew %></span><span class="date">Set date →</span></li><% }) %>
+</ul></div>
+<% } %>
+<%- include('../partials/foot') %>
