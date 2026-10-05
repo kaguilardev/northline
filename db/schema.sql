@@ -200,6 +200,17 @@ CREATE TABLE IF NOT EXISTS nl_job_crew (
 );
 CREATE INDEX IF NOT EXISTS nl_job_crew_user_idx ON nl_job_crew (user_id);
 
+-- ── Saved translations (DeepL), so each sentence is only translated once ──
+CREATE TABLE IF NOT EXISTS nl_translations (
+  lang        TEXT NOT NULL,
+  formality   TEXT NOT NULL,
+  hash        TEXT NOT NULL,
+  source      TEXT NOT NULL,
+  result      TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (lang, formality, hash)
+);
+
 -- ── One-time data fixes (run last, once every table exists) ──
 -- Anyone who has accepted a quote is a customer, not a lead
 UPDATE nl_clients c SET status='scheduled' WHERE status IN ('lead','quoted')

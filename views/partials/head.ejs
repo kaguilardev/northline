@@ -41,7 +41,8 @@
 <% } else if (signedIn) { %>
 <header class="topbar crewbar">
   <a class="brand" href="/crew"><img src="/img/logo-mark-light.png" alt=""><span>Northline<small>Crew</small></span></a>
-  <form method="post" action="/logout" style="margin-left:auto"><button class="link">Sign out</button></form>
+  <span style="margin-left:auto"><%- include('lang-toggle') %></span>
+  <form method="post" action="/logout"><button class="link">Sign out</button></form>
 </header>
 <% } %>
 <main class="<%= signedIn ? 'wrap' : '' %>">

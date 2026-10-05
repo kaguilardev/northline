@@ -54,6 +54,7 @@ h3 { font-size: 21px; }
 .topbar .areas { display: inline-flex; gap: 8px; align-items: center; }
 .site-header { position: sticky; top: 0; z-index: 30; background: rgba(244,239,230,.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .site-header .container { display: flex; align-items: center; gap: 28px; min-height: 84px; }
+.logo { flex: none; }
 .logo img { height: 58px; width: auto; }
 .mainnav { display: flex; gap: 4px; margin-left: auto; align-items: center; }
 .mainnav > a, .dd-toggle { white-space: nowrap; font: 600 13.5px var(--label); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); text-decoration: none; padding: 13px 16px; border-radius: 10px; }
@@ -337,3 +338,14 @@ table.price .custom td { color: var(--gold-deep); font-weight: 600; }
   .points { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) { .grid.g5.balanced > * { flex-basis: 100%; } .tile { font-size: 14px; padding: 12px; } }
+
+/* language switch */
+.lang { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 99px; padding: 2px; }
+.lang a { padding: 4px 10px; border-radius: 99px; font: 700 11.5px var(--label); letter-spacing: .1em; color: var(--gold-soft); text-decoration: none; min-width: 34px; text-align: center; }
+.lang a.on { background: var(--gold); color: var(--green-900); }
+@media (max-width: 820px) { .topbar .container { justify-content: flex-end; } }
+
+/* Spanish labels run longer: tighter menu, and the menu button kicks in sooner */
+.lang-es .mainnav > a, .lang-es .dd-toggle { padding: 12px 11px; letter-spacing: .05em; font-size: 12.5px; }
+.lang-es .mainnav .btn { padding: 14px 16px; letter-spacing: .04em; }
+@media (max-width: 1400px) { .lang-es .mainnav { display: none; } .lang-es .mobile-nav { display: block; } }

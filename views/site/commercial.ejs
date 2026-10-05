@@ -52,9 +52,9 @@
         <label class="field"><span>Phone *</span><input name="phone" type="tel" required autocomplete="tel" value="<%= form.phone || '' %>"></label>
         <label class="field full"><span>Property address *</span><input name="address" required value="<%= form.address || '' %>"></label>
         <label class="field"><span>Property type *</span>
-          <select name="property_type" required><option value="">Choose…</option><% propertyTypes.forEach(p => { %><option <%= form.property_type === p ? 'selected' : '' %>><%= p %></option><% }) %></select></label>
+          <select name="property_type" required><option value="">Choose…</option><% propertyTypes.forEach(p => { %><option value="<%= p %>" <%= form.property_type === p ? 'selected' : '' %>><%= p %></option><% }) %></select></label>
         <label class="field"><span>How often?</span>
-          <select name="frequency"><% frequencies.forEach(f => { %><option <%= form.frequency === f ? 'selected' : '' %>><%= f %></option><% }) %></select></label>
+          <select name="frequency"><% frequencies.forEach(f => { %><option value="<%= f %>" <%= form.frequency === f ? 'selected' : '' %>><%= f %></option><% }) %></select></label>
         <fieldset class="field full checks-field"><span>Services you’re interested in *</span>
           <div class="check-grid">
             <% const picked = [].concat(form.services || []); commercialServices.forEach(s => { %>

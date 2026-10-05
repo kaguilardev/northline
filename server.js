@@ -74,6 +74,7 @@ app.use('/admin', async (req, res, next) => {
   next();
 });
 
+app.use(require('./lib/translate').middleware);
 app.get('/healthz', (req, res) => res.send('ok'));
 app.use(require('./routes/public'));
 app.use(require('./routes/admin'));

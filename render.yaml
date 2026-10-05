@@ -38,6 +38,8 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
+      - key: DEEPL_API_KEY   # turns on the EN | ES language switch
+        sync: false
 
 databases:
   - name: northline-db

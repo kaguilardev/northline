@@ -31,6 +31,16 @@ Nothing you do locally affects the live site until you publish.
 
 Add people on **Team → Add someone**. You get a one-time link (shown once, valid 7 days) to text or email them; they choose their own password. Forgot password? Make them a new link.
 
+## English / Español
+
+With `DEEPL_API_KEY` set (in `.env` locally, and in Render's Environment for the live site), an **EN | ES** switch appears on the website, crew screens and sign-in pages. The office admin stays in English.
+
+- Pages are written in English and translated by DeepL the first time someone views them in Spanish; every sentence is saved in the database, so later visits are instant and use none of the DeepL allowance.
+- Customers get the polite *usted*; crew screens use the friendly *tú*.
+- Prices, "Northline" and anything marked `translate="no"` (customer names, addresses) are never translated.
+- House terms DeepL gets wrong (e.g. "crew" → "equipo", not "tripulación") are fixed in `lib/translate.js` → `TERMS`.
+- Without a key, the switch simply doesn't show.
+
 ## Publish to the live site
 
 Double-click **Publish to Live.command**. It commits your changes, pushes to GitHub, and Render redeploys automatically in a couple of minutes.
@@ -44,7 +54,8 @@ Double-click **Publish to Live.command**. It commits your changes, pushes to Git
 | `SESSION_SECRET` | Long random string for login cookies |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | First admin login, created on startup if none exists |
 | `RESEND_API_KEY` | From resend.com. Leave blank to preview emails without sending |
-| `EMAIL_FROM` | e.g. `Northline Landscaping <hello@yourdomain.com>` (domain must be verified in Resend) |
+| `EMAIL_FROM` | e.g. `Northline Home & Outdoor <hello@northlinehomeandoutdoors.com>` (domain must be verified in Resend) |
+| `DEEPL_API_KEY` | From deepl.com — turns on the English/Español switch |
 
 Add an account from the command line: `npm run admin:create -- name@example.com "password" [owner|admin|crew]`
 

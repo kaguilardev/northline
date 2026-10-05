@@ -44,7 +44,7 @@
         <label class="field"><span>Email *</span><input name="email" type="email" required autocomplete="email" value="<%= form.email || '' %>"></label>
         <label class="field"><span>City you live in</span><input name="city" autocomplete="address-level2" value="<%= form.city || '' %>"></label>
         <label class="field"><span>Position *</span>
-          <select name="position" required><option value="">Choose…</option><% openings.forEach(o => { %><option <%= form.position === o.title ? 'selected' : '' %>><%= o.title %></option><% }) %><option <%= form.position === 'Not sure / any' ? 'selected' : '' %>>Not sure / any</option></select></label>
+          <select name="position" required><option value="">Choose…</option><% openings.forEach(o => { %><option value="<%= o.title %>" <%= form.position === o.title ? 'selected' : '' %>><%= o.title %></option><% }) %><option value="Not sure / any" <%= form.position === 'Not sure / any' ? 'selected' : '' %>>Not sure / any</option></select></label>
         <label class="field"><span>Earliest start date</span><input name="start_date" type="date" value="<%= form.start_date || '' %>"></label>
         <label class="field full"><span>Availability</span><input name="availability" placeholder="e.g. Weekdays, some Saturdays" value="<%= form.availability || '' %>"></label>
         <fieldset class="field full checks-field"><span>Check any that apply</span>

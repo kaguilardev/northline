@@ -12,11 +12,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/site.css">
 </head>
-<body>
+<body class="<%= typeof lang !== 'undefined' && lang !== 'en' ? 'lang-' + lang : '' %>">
 <div class="topbar">
   <div class="container">
     <span class="areas"><%- icon('pin') %> <%= areas.slice(0,4).join(' • ') %> &amp; surrounding areas</span>
-    <span class="row" style="display:flex;gap:18px">
+    <span class="row" style="display:flex;gap:18px;align-items:center">
+      <%- include('lang-toggle') %>
       <% if (contact.phone) { %><a href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%- icon('phone') %> <%= contact.phone %></a><% } %>
       <% if (contact.email) { %><a href="mailto:<%= contact.email %>"><%- icon('mail') %> <%= contact.email %></a><% } %>
       <% if (!contact.phone && !contact.email) { %><span>Clean • Reliable • Professional</span><% } %>

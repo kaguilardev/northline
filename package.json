@@ -1,7 +1,7 @@
 {
   "name": "northline",
   "version": "1.0.0",
-  "description": "Northline Landscaping \u2014 admin portal for clients, specials and email",
+  "description": "Northline Landscaping — admin portal for clients, specials and email",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -23,6 +23,7 @@
     "express-session": "^1.18.1",
     "helmet": "^8.0.0",
     "multer": "^2.0.0",
+    "node-html-parser": "^6.1.13",
     "pdfkit": "^0.15.2",
     "pg": "^8.13.1",
     "resend": "^4.0.1"

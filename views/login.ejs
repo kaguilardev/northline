@@ -1,6 +1,7 @@
 <%- include('partials/head', { title: 'Sign in' }) %>
 <div class="auth">
   <form method="post" action="/login" class="card">
+    <div class="auth-lang"><%- include('partials/lang-toggle') %></div>
     <img src="/img/logo.png" alt="Northline Home & Outdoor" style="width:170px;margin:0 auto 18px;display:block">
     <h1>Team sign in</h1>
     <% if (error) { %><p class="alert"><%= error %></p><% } %>

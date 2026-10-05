@@ -15,9 +15,9 @@
       <div class="doc-body">
         <div class="doc-to">
           <div><div class="label" style="margin-bottom:6px">Prepared for</div>
-            <strong><%= quote.client_name || 'Customer' %></strong><br>
-            <% if (quote.client_address) { %><%= quote.client_address %><br><% } %>
-            <span class="muted"><%= [quote.client_email, quote.client_phone].filter(Boolean).join(' · ') %></span>
+            <strong translate="no"><%= quote.client_name || 'Customer' %></strong><br>
+            <% if (quote.client_address) { %><span translate="no"><%= quote.client_address %></span><br><% } %>
+            <span class="muted" translate="no"><%= [quote.client_email, quote.client_phone].filter(Boolean).join(' · ') %></span>
           </div>
           <div><div class="label" style="margin-bottom:6px">Project</div><strong><%= quote.title || 'Home & outdoor services' %></strong></div>
         </div>

@@ -1,6 +1,7 @@
 <%- include('partials/head', { title: 'Set your password' }) %>
 <div class="auth">
   <form method="post" action="/invite/<%= token %>" class="card">
+    <div class="auth-lang"><%- include('partials/lang-toggle') %></div>
     <img src="/img/logo.png" alt="Northline Home & Outdoor" style="width:170px;margin:0 auto 18px;display:block">
     <% if (!u) { %>
       <h1>This link has expired</h1>

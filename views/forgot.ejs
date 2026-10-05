@@ -1,6 +1,7 @@
 <%- include('partials/head', { title: 'Reset your password' }) %>
 <div class="auth">
   <form method="post" action="/forgot" class="card">
+    <div class="auth-lang"><%- include('partials/lang-toggle') %></div>
     <img src="/img/logo.png" alt="Northline Home & Outdoor" style="width:170px;margin:0 auto 18px;display:block">
     <% if (sent) { %>
       <h1>Check your email</h1>
