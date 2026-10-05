@@ -3,6 +3,7 @@ const db = require('../db');
 const pricing = require('../lib/pricing');
 const { upload, savePhotos } = require('../lib/photos');
 const { notifyNewRequest } = require('../lib/email');
+const { markQuoteAccepted } = require('../lib/pipeline');
 
 const router = express.Router();
 
@@ -100,10 +101,8 @@ for (const action of ['accept', 'decline']) {
   router.post(`/q/:token/${action}`, async (req, res, next) => {
     try {
       const status = action === 'accept' ? 'accepted' : 'declined';
-      await db.query(`UPDATE nl_quotes SET status=$1, responded_at=now(), updated_at=now() WHERE token=$2 AND status='sent'`, [status, req.params.token]);
-      if (status === 'accepted') {
-        await db.query(`UPDATE nl_requests SET status='won' WHERE id=(SELECT request_id FROM nl_quotes WHERE token=$1)`, [req.params.token]);
-      }
+      const { rows } = await db.query(`UPDATE nl_quotes SET status=$1, responded_at=now(), updated_at=now() WHERE token=$2 AND status='sent' RETURNING id`, [status, req.params.token]);
+      if (status === 'accepted' && rows[0]) await markQuoteAccepted(rows[0].id);
       res.redirect(`/q/${req.params.token}?r=${status}`);
     } catch (e) { next(e); }
   });

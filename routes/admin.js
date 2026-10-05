@@ -3,9 +3,9 @@ const db = require('../db');
 const { requireAdmin, verifyLogin } = require('../lib/auth');
 const specials = require('../lib/specials');
 const { sendBulk, renderEmail } = require('../lib/email');
+const { CLIENT_STATUSES: STATUSES, CUSTOMER_STATUSES, PROSPECT, REQ_STAGES } = require('../lib/pipeline');
 
 const router = express.Router();
-const STATUSES = ['lead', 'quoted', 'scheduled', 'in_progress', 'completed', 'on_hold'];
 
 // ---------- Login ----------
 router.get('/login', (req, res) => {
@@ -38,8 +38,11 @@ router.use('/admin', requireAdmin);
 router.get('/admin', async (req, res, next) => {
   try {
     const counts = await db.query(`SELECT status, count(*)::int AS n FROM nl_clients GROUP BY status`);
-    const byStatus = Object.fromEntries(STATUSES.map((s) => [s, 0]));
-    counts.rows.forEach((r) => { byStatus[r.status] = r.n; });
+    const byStatus = Object.fromEntries(CUSTOMER_STATUSES.map((s) => [s, 0]));
+    counts.rows.forEach((r) => { if (r.status in byStatus) byStatus[r.status] = r.n; });
+    const reqCounts = await db.query(`SELECT status, count(*)::int AS n FROM nl_requests GROUP BY status`);
+    const pipeline = REQ_STAGES.filter((s) => ['new', 'lead', 'quoted'].includes(s.key)).map((s) => ({ ...s, n: 0 }));
+    reqCounts.rows.forEach((r) => { const st = pipeline.find((p) => p.key === r.status); if (st) st.n = r.n; });
     const [kpi, upcoming, requests, byService] = await Promise.all([
       db.query(`SELECT
         (SELECT count(*)::int FROM nl_requests WHERE status='new') AS new_requests,
@@ -50,13 +53,13 @@ router.get('/admin', async (req, res, next) => {
         (SELECT COALESCE(sum(quoted_price),0) FROM nl_jobs WHERE status='completed' AND payment_status<>'paid') AS unpaid`),
       db.query(`SELECT j.id, j.job_date, j.service, j.package, j.employees, c.name FROM nl_jobs j LEFT JOIN nl_clients c ON c.id=j.client_id
         WHERE j.status IN ('scheduled','in_progress') AND (j.job_date IS NULL OR j.job_date >= current_date - 1) ORDER BY j.job_date NULLS LAST LIMIT 8`),
-      db.query(`SELECT id, name, service, created_at FROM nl_requests WHERE status='new' ORDER BY created_at DESC LIMIT 6`),
+      db.query(`SELECT id, name, service, created_at, viewed_at FROM nl_requests WHERE status='new' ORDER BY created_at DESC LIMIT 6`),
       db.query(`SELECT COALESCE(service,'Other') AS service, count(*)::int AS jobs, COALESCE(sum(quoted_price),0) AS revenue,
         COALESCE(sum(quoted_price - actual_cost) FILTER (WHERE actual_cost IS NOT NULL),0) AS profit,
         COALESCE(sum(labor_hours),0) AS hours
         FROM nl_jobs WHERE status='completed' GROUP BY 1 ORDER BY profit DESC`),
     ]);
-    res.render('dashboard', { byStatus, k: kpi.rows[0], upcoming: upcoming.rows, requests: requests.rows, byService: byService.rows });
+    res.render('dashboard', { byStatus, pipeline, k: kpi.rows[0], upcoming: upcoming.rows, requests: requests.rows, byService: byService.rows });
   } catch (e) { next(e); }
 });
 
@@ -64,17 +67,21 @@ router.get('/admin', async (req, res, next) => {
 router.get('/admin/clients', async (req, res, next) => {
   try {
     const { q = '', status = '' } = req.query;
+    const prospects = req.query.prospects === '1';
     const params = [];
     const where = [];
     if (q) { params.push(`%${q}%`); where.push(`(name ILIKE $${params.length} OR email ILIKE $${params.length} OR address ILIKE $${params.length})`); }
     if (STATUSES.includes(status)) { params.push(status); where.push(`status = $${params.length}`); }
+    // Prospects (lead / quoted) belong to the Requests pipeline, not the customer list
+    else { params.push(PROSPECT); where.push(`${prospects ? '' : 'NOT '}(status = ANY($${params.length}))`); }
     const { rows } = await db.query(
       `SELECT * FROM nl_clients ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY updated_at DESC`, params);
-    res.render('clients', { clients: rows, q, status });
+    const prospectCount = (await db.query(`SELECT count(*)::int AS n FROM nl_clients WHERE status = ANY($1)`, [PROSPECT])).rows[0].n;
+    res.render('clients', { clients: rows, q, status, prospects, prospectCount, statuses: CUSTOMER_STATUSES });
   } catch (e) { next(e); }
 });
 
-router.get('/admin/clients/new', (req, res) => res.render('client-form', { client: {}, error: null }));
+router.get('/admin/clients/new', (req, res) => res.render('client-form', { customer: { status: 'scheduled' }, error: null }));
 
 router.get('/admin/clients/:id', async (req, res, next) => {
   try {
@@ -82,19 +89,19 @@ router.get('/admin/clients/:id', async (req, res, next) => {
     if (!rows[0]) return res.status(404).render('error', { message: 'Client not found.' });
     const quotes = (await db.query('SELECT id, number, title, total, status FROM nl_quotes WHERE client_id=$1 ORDER BY id DESC', [rows[0].id])).rows;
     const jobs = (await db.query('SELECT id, job_date, service, package, status, quoted_price FROM nl_jobs WHERE client_id=$1 ORDER BY job_date DESC NULLS FIRST', [rows[0].id])).rows;
-    res.render('client-form', { client: rows[0], error: null, quotes, jobs });
+    res.render('client-form', { customer: rows[0], error: null, quotes, jobs });
   } catch (e) { next(e); }
 });
 
 function clientFields(b) {
   return [b.name?.trim(), b.email?.trim() || null, b.phone?.trim() || null, b.address?.trim() || null,
-    b.service?.trim() || null, STATUSES.includes(b.status) ? b.status : 'lead', b.next_visit || null,
+    b.service?.trim() || null, STATUSES.includes(b.status) ? b.status : 'scheduled', b.next_visit || null,
     b.notes?.trim() || null, b.email_opt_in === 'on'];
 }
 
 router.post('/admin/clients', async (req, res, next) => {
   try {
-    if (!req.body.name?.trim()) return res.render('client-form', { client: req.body, error: 'Name is required.' });
+    if (!req.body.name?.trim()) return res.render('client-form', { customer: req.body, error: 'Name is required.' });
     await db.query(
       `INSERT INTO nl_clients (name,email,phone,address,service,status,next_visit,notes,email_opt_in)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`, clientFields(req.body));
@@ -104,7 +111,7 @@ router.post('/admin/clients', async (req, res, next) => {
 
 router.post('/admin/clients/:id', async (req, res, next) => {
   try {
-    if (!req.body.name?.trim()) return res.render('client-form', { client: { ...req.body, id: req.params.id }, error: 'Name is required.' });
+    if (!req.body.name?.trim()) return res.render('client-form', { customer: { ...req.body, id: req.params.id }, error: 'Name is required.' });
     await db.query(
       `UPDATE nl_clients SET name=$1,email=$2,phone=$3,address=$4,service=$5,status=$6,next_visit=$7,notes=$8,
        email_opt_in=$9, updated_at=now() WHERE id=$10`, [...clientFields(req.body), req.params.id]);

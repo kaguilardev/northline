@@ -1,12 +1,36 @@
 <%- include('../partials/head') %>
 <div class="pagehead">
-  <div><a href="/admin/quotes" class="muted small">← All quotes</a><h1 style="margin-top:6px"><%= quote.number %> <span class="pill <%= quote.status %>" style="vertical-align:middle"><%= quote.status %></span></h1></div>
+  <div><a href="/admin/quotes" class="muted small">← All quotes</a><h1 style="margin-top:6px"><%= quote.number %></h1></div>
   <div class="row">
+    <a class="btn ghost" href="/admin/quotes/<%= quote.id %>/pdf">Download PDF</a>
     <a class="btn ghost" href="/admin/quotes/<%= quote.id %>/edit">Edit</a>
     <% if (job) { %><a class="btn ghost" href="/admin/jobs/<%= job.id %>">View job</a><% } else { %><a class="btn" href="/admin/jobs/new?quote=<%= quote.id %>">Create job</a><% } %>
   </div>
 </div>
 <% if (flash) { %><p class="success"><%= flash %></p><% } %>
+<% const when = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+   const st = quote.status, responded = st === 'accepted' || st === 'declined';
+   const banner = {
+     draft: ['Draft — not sent yet', 'Send it to the customer using the options on the right.'],
+     sent: ['Waiting on the customer', 'Sent ' + when(quote.sent_at) + '. You’ll see it change here as soon as they accept or decline.'],
+     accepted: ['Accepted by the customer', when(quote.responded_at) + (job ? ' — the job has been created.' : ' — next step: create the job to schedule the work.')],
+     declined: ['Declined', 'The customer declined on ' + when(quote.responded_at) + '. You can edit the quote and send it again.'],
+   }[st]; %>
+<section class="card status-card <%= st %>">
+  <div class="status-now">
+    <span class="k">Status</span>
+    <span class="pill big <%= st %>"><%= st === 'sent' ? 'Awaiting customer' : st %></span>
+    <span><strong><%= banner[0] %></strong> <span class="muted">· <%= banner[1] %></span></span>
+    <% if (st === 'accepted' && !job) { %><a class="btn gold" style="margin-left:auto" href="/admin/jobs/new?quote=<%= quote.id %>">Create job →</a><% } %>
+  </div>
+  <ol class="track">
+    <li class="done"><span class="b">✓</span>Created<small><%= when(quote.created_at) %></small></li>
+    <li class="<%= st === 'draft' ? 'on' : 'done' %>"><span class="b"><%= st === 'draft' ? '2' : '✓' %></span>Sent<small><%= quote.sent_at ? when(quote.sent_at) : 'not yet' %></small></li>
+    <li class="<%= st === 'sent' ? 'on' : (responded ? 'done ' + st : '') %>"><span class="b"><%= st === 'declined' ? '✕' : (st === 'accepted' ? '✓' : '3') %></span><%= responded ? (st === 'accepted' ? 'Accepted' : 'Declined') : 'Customer decides' %><small><%= responded ? when(quote.responded_at) : '' %></small></li>
+    <li class="<%= job ? 'done' : (st === 'accepted' ? 'on' : '') %>"><span class="b"><%= job ? '✓' : '4' %></span>Job booked<small><%= job ? '<a href="/admin/jobs/' + job.id + '">view job</a>' : '' %></small></li>
+  </ol>
+  <% if (request) { %><p class="muted small" style="margin:12px 0 0">From request: <a href="/admin/requests/<%= request.id %>"><%= request.name %></a></p><% } %>
+</section>
 <div class="grid2 wide-left" style="align-items:start">
   <section class="card">
     <dl class="facts">
@@ -37,12 +61,13 @@
       <% if (quote.status !== 'draft') { %><p class="small" style="margin-bottom:0"><a href="<%= link %>" target="_blank">Preview what the customer sees ↗</a></p><% } else { %><p class="muted small" style="margin-bottom:0">The link works once the quote is marked sent.</p><% } %>
     </section>
     <section class="card" style="margin-top:18px">
-      <h2>Status</h2>
+      <h2>Change status yourself</h2>
+      <p class="muted small" style="margin-top:0">Use this if the customer answered by phone or text instead of on the estimate page.</p>
       <form method="post" action="/admin/quotes/<%= quote.id %>/status" class="row">
-        <select name="status" style="flex:1;margin:0"><% ['draft','sent','accepted','declined'].forEach(s => { %><option value="<%= s %>" <%= quote.status === s ? 'selected' : '' %>><%= s %></option><% }) %></select>
-        <button class="btn">Update</button>
+        <% if (st !== 'accepted') { %><button class="btn small" name="status" value="accepted">Mark accepted</button><% } %>
+        <% if (st !== 'declined') { %><button class="btn small ghost" name="status" value="declined">Mark declined</button><% } %>
+        <% if (st !== 'draft') { %><button class="btn small ghost" name="status" value="draft" onclick="return confirm('Move back to draft? The customer link will stop working until you send it again.')">Back to draft</button><% } %>
       </form>
-      <% if (quote.responded_at) { %><p class="muted small">Customer responded <%= new Date(quote.responded_at).toLocaleString('en-US') %></p><% } %>
     </section>
     <form method="post" action="/admin/quotes/<%= quote.id %>/delete" onsubmit="return confirm('Delete this quote?')" style="margin-top:14px"><button class="link danger small">Delete quote</button></form>
   </div>

@@ -11,7 +11,7 @@
         <td><%= q.client_name || '—' %></td>
         <td><%= q.title || '—' %></td>
         <td class="money"><%= money(q.total) %></td>
-        <td><span class="pill <%= q.status %>"><%= q.status %></span></td>
+        <td><span class="pill <%= q.status %>"><%= q.status === 'sent' ? 'awaiting customer' : q.status %></span></td>
         <td class="small"><%= fmtDate(q.created_at) %></td>
       </tr>
     <% }) %>

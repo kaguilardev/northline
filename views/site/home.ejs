@@ -46,27 +46,7 @@
   </div>
 </section>
 
-<section class="section alt" id="packages">
-  <div class="container">
-    <div class="section-head reveal" style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap">
-      <div><div class="label">Lawn care packages</div><h2>Simple, honest pricing.</h2></div>
-      <a class="btn btn-ghost" href="/lawn-care">Full price menu <%- icon('arrow') %></a>
-    </div>
-    <div class="grid g4">
-      <% lawnPackages.forEach(p => { %>
-      <div class="card pkg reveal <%= p.featured ? 'featured' : '' %>">
-        <% if (p.featured) { %><span class="ribbon">Most complete</span><% } %>
-        <div class="top"><span class="name"><%= p.name %></span><span class="price">$<%= p.from %>+</span></div>
-        <p class="tag"><%= p.tagline %></p>
-        <ul><% p.includes.forEach(i => { %><li><%- icon('check') %><%= i %></li><% }) %></ul>
-      </div>
-      <% }) %>
-    </div>
-    <p class="muted center" style="margin-top:26px;font-size:14px">Starting prices for lawns up to 5,000 ft² of mowable area. <a href="/lawn-care">See pricing by lawn size →</a></p>
-  </div>
-</section>
-
-<section class="section">
+<section class="section alt">
   <div class="container split">
     <div class="reveal">
       <div class="label">The Northline standard</div>
@@ -83,14 +63,6 @@
   </div>
 </section>
 
-<section class="section dark">
-  <div class="container grid g3">
-    <div class="pillar reveal"><span class="medal"><%- icon('shield') %></span><div><h3>Quality Work</h3><p>Attention to detail on every job, big or small.</p></div></div>
-    <div class="pillar reveal"><span class="medal"><%- icon('sprout') %></span><div><h3>Premium Materials</h3><p>Long-lasting results you won’t have to redo next season.</p></div></div>
-    <div class="pillar reveal"><span class="medal"><%- icon('users') %></span><div><h3>Residential Experts</h3><p>Clean, respectful and reliable — in and around your home.</p></div></div>
-  </div>
-</section>
-
 <section class="section">
   <div class="container">
     <div class="section-head center reveal"><div class="label rule">How it works</div><h2>Getting started is easy.</h2></div>
@@ -99,14 +71,6 @@
       <div class="step reveal"><h3>Get a clear estimate</h3><p>We send a professional, itemized estimate you can review and accept online.</p></div>
       <div class="step reveal"><h3>We show up and deliver</h3><p>A uniformed crew arrives on schedule, does the work right and leaves your property clean.</p></div>
     </div>
-  </div>
-</section>
-
-<section class="section alt">
-  <div class="container center reveal">
-    <div class="label rule">Service area</div>
-    <h2 style="margin:12px 0 24px">Proudly serving the Triangle.</h2>
-    <div class="chips" style="justify-content:center"><% areas.forEach(a => { %><span class="chip"><%- icon('pin') %><%= a %></span><% }) %></div>
   </div>
 </section>
 

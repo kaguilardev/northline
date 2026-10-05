@@ -15,7 +15,7 @@
     <h2>New estimate requests</h2>
     <% if (!requests.length) { %><p class="muted">You’re all caught up.</p><% } %>
     <ul class="list">
-      <% requests.forEach(r => { %><li><a href="/admin/requests/<%= r.id %>"><strong><%= r.name %></strong></a><span class="muted"><%= r.service %></span><span class="date"><%= fmtDate(r.created_at) %></span></li><% }) %>
+      <% requests.forEach(r => { %><li><a href="/admin/requests/<%= r.id %>"><% if (!r.viewed_at) { %><span class="dot" title="Not opened yet"></span><% } %><strong><%= r.name %></strong></a><span class="muted"><%= r.service %></span><span class="date"><%= fmtDate(r.created_at) %></span></li><% }) %>
     </ul>
   </section>
   <section class="card">
@@ -36,7 +36,13 @@
     </tbody>
   </table>
 </section>
-<h2 style="margin-top:28px">Client pipeline</h2>
+<h2 style="margin-top:28px">Sales pipeline</h2>
+<div class="stats">
+  <% pipeline.forEach(st => { %>
+    <a class="stat" href="/admin/requests?status=<%= st.key %>"><span class="n"><%= st.n %></span><span class="pill <%= st.key %>"><%= st.label %></span></a>
+  <% }) %>
+</div>
+<h2 style="margin-top:28px">Customers</h2>
 <div class="stats">
   <% Object.entries(byStatus).forEach(([s, n]) => { %>
     <a class="stat" href="/admin/clients?status=<%= s %>"><span class="n"><%= n %></span><span class="pill <%= s %>"><%= s.replace('_',' ') %></span></a>

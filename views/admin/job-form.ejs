@@ -4,62 +4,89 @@
   <div><a href="/admin/jobs" class="muted small">← All jobs</a><h1 style="margin-top:6px"><%= job.id ? 'Job #' + job.id : 'New job' %></h1></div>
   <% if (job.quote_id) { %><a class="btn ghost" href="/admin/quotes/<%= job.quote_id %>">View quote</a><% } %>
 </div>
+<% const afterOpen = !!job.id && (job.status === 'completed' || job.actual_cost != null || job.materials_cost != null || photos.length || job.review_rating); %>
+<% if (!job.id) { %>
+<div class="explain">
+  <strong>What’s a job?</strong> A job is work you’ve booked for a customer — it’s what goes on the schedule and tracks whether you got paid and made money.
+  <ul>
+    <li><strong>Easiest way:</strong> open an accepted quote and click <em>Create job</em>. The customer and price fill in for you.<% if (job.quote_id) { %> <span class="pill accepted">done — filled from the quote</span><% } %></li>
+    <li><strong>Now:</strong> fill in steps 1–3 below (who, when, price).</li>
+    <li><strong>After the work is done:</strong> come back to add your costs, before/after photos and the customer’s review.</li>
+  </ul>
+</div>
+<% } %>
 <form method="post" action="/admin/jobs<%= job.id ? '/' + job.id : '' %>" enctype="multipart/form-data" class="grid2 wide-left" style="align-items:start">
   <div>
     <section class="card form">
+      <h2><span class="stepn">1</span>The work</h2>
       <input type="hidden" name="quote_id" value="<%= job.quote_id || '' %>">
       <div class="cols">
         <label class="span2">Customer
-          <select name="client_id"><option value="">—</option><% clients.forEach(c => { %><option value="<%= c.id %>" <%= String(job.client_id) === String(c.id) ? 'selected' : '' %>><%= c.name %></option><% }) %></select></label>
-        <label>Service
-          <select name="service"><option value="">—</option><% SERVICE_TYPES.forEach(s => { %><option <%= job.service === s ? 'selected' : '' %>><%= s %></option><% }) %></select></label>
-        <label>Package <input name="package" value="<%= job.package || '' %>" placeholder="e.g. Full Refresh — Medium"></label>
-        <label>Job date <input type="date" name="job_date" value="<%= d(job.job_date) %>"></label>
-        <label>Employees assigned <input name="employees" value="<%= job.employees || '' %>" placeholder="Names"></label>
-        <label>Job status <select name="status"><% JOB_STATUSES.forEach(s => { %><option value="<%= s %>" <%= job.status === s ? 'selected' : '' %>><%= s.replace('_',' ') %></option><% }) %></select></label>
-        <label>Payment status <select name="payment_status"><% PAY_STATUSES.forEach(s => { %><option value="<%= s %>" <%= job.payment_status === s ? 'selected' : '' %>><%= s %></option><% }) %></select></label>
+          <select name="client_id"><option value="">Choose a customer…</option><% clients.forEach(c => { %><option value="<%= c.id %>" <%= String(job.client_id) === String(c.id) ? 'selected' : '' %>><%= c.name %></option><% }) %></select></label>
+        <label>Type of service
+          <select name="service"><option value="">Choose…</option><% SERVICE_TYPES.forEach(s => { %><option <%= job.service === s ? 'selected' : '' %>><%= s %></option><% }) %></select></label>
+        <label>What we’re doing <input name="package" value="<%= job.package || '' %>" placeholder="e.g. Full Refresh — medium lawn"></label>
+        <label class="span2">Notes for the crew <small class="muted">— only your team sees this</small><textarea name="notes" rows="2" placeholder="Gate code, dog in yard, park on street…"><%= job.notes || '' %></textarea></label>
       </div>
     </section>
+
     <section class="card form" style="margin-top:18px">
-      <h2>Money</h2>
+      <h2><span class="stepn">2</span>Schedule</h2>
       <div class="cols">
-        <label>Quoted price ($) <input type="number" step="0.01" name="quoted_price" value="<%= job.quoted_price ?? '' %>" data-calc></label>
+        <label>Date of the job <input type="date" name="job_date" value="<%= d(job.job_date) %>"></label>
+        <label>Crew <small class="muted">— who’s working it</small><input name="employees" value="<%= job.employees || '' %>" placeholder="e.g. Marcus, Dee"></label>
+        <label class="span2">Where it stands
+          <select name="status"><% JOB_STATUSES.forEach(s => { %><option value="<%= s %>" <%= job.status === s ? 'selected' : '' %>><%= { scheduled: 'Scheduled — booked, not started', in_progress: 'In progress — crew is on it', completed: 'Completed — work is done', cancelled: 'Cancelled' }[s] %></option><% }) %></select></label>
+      </div>
+    </section>
+
+    <section class="card form" style="margin-top:18px">
+      <h2><span class="stepn">3</span>Price &amp; payment</h2>
+      <div class="cols">
+        <label>Price for the customer ($) <small class="muted">— what they pay<%= job.quote_id ? ', from the quote' : '' %></small><input type="number" step="0.01" name="quoted_price" value="<%= job.quoted_price ?? '' %>"></label>
+        <label>Payment <select name="payment_status"><% PAY_STATUSES.forEach(s => { %><option value="<%= s %>" <%= job.payment_status === s ? 'selected' : '' %>><%= { unpaid: 'Not paid yet', deposit: 'Deposit received', paid: 'Paid in full' }[s] %></option><% }) %></select></label>
+      </div>
+    </section>
+
+    <details class="card form after" style="margin-top:18px" <%= afterOpen ? 'open' : '' %>>
+      <summary><h2 style="margin:0"><span class="stepn">4</span>After the job <span class="muted small" style="font-family:Inter,sans-serif;font-weight:500">— costs, photos &amp; review</span></h2></summary>
+      <p class="muted small">Fill this in once the work is done so the dashboard can show which services make you the most money.</p>
+      <h3 class="sub">Your costs</h3>
+      <div class="cols">
         <label>Materials ($) <input type="number" step="0.01" name="materials_cost" value="<%= job.materials_cost ?? '' %>"></label>
-        <label>Labor hours <input type="number" step="0.25" name="labor_hours" value="<%= job.labor_hours ?? '' %>"></label>
-        <label>Actual cost ($) <small class="muted">materials + labor + other</small><input type="number" step="0.01" name="actual_cost" value="<%= job.actual_cost ?? '' %>" data-calc></label>
+        <label>Hours worked <small class="muted">— all crew combined</small><input type="number" step="0.25" name="labor_hours" value="<%= job.labor_hours ?? '' %>"></label>
+        <label class="span2">Total cost of the job ($) <small class="muted">— materials + labor + anything else (gas, dump fees…)</small><input type="number" step="0.01" name="actual_cost" value="<%= job.actual_cost ?? '' %>"></label>
       </div>
-      <div class="total-row" style="padding:4px 0 0"><span>Gross profit</span><strong id="profit"><%= profit != null ? money(profit) : '—' %></strong></div>
-    </section>
-    <section class="card form" style="margin-top:18px">
-      <h2>Photos</h2>
+      <div class="total-row" style="padding:4px 0 0"><span>Profit</span><strong id="profit"><%= profit != null ? money(profit) : '—' %></strong></div>
+
+      <h3 class="sub">Photos</h3>
       <div class="cols">
-        <label>Add before photos <input type="file" name="before" accept="image/*" multiple></label>
-        <label>Add after photos <input type="file" name="after" accept="image/*" multiple></label>
+        <label>Before photos <input type="file" name="before" accept="image/*" multiple></label>
+        <label>After photos <input type="file" name="after" accept="image/*" multiple></label>
       </div>
       <div class="photos">
         <% photos.forEach(p => { %><div class="photo-cell"><a href="/photo/<%= p.id %>" target="_blank"><img src="/photo/<%= p.id %>" alt="" loading="lazy"><span class="tag"><%= p.kind %></span></a><button class="del" type="submit" form="delphoto<%= p.id %>" title="Delete photo" onclick="return confirm('Delete this photo?')">×</button></div><% }) %>
       </div>
-      <label class="check" style="margin-top:14px"><input type="checkbox" name="show_in_gallery" <%= job.show_in_gallery ? 'checked' : '' %>> Show this job’s before/after in the public gallery</label>
-    </section>
-    <section class="card form" style="margin-top:18px">
-      <h2>Customer review</h2>
+      <label class="check" style="margin-top:14px"><input type="checkbox" name="show_in_gallery" <%= job.show_in_gallery ? 'checked' : '' %>> Show these before/after photos in the website gallery</label>
+
+      <h3 class="sub">Customer review</h3>
       <div class="cols">
         <label>Rating <select name="review_rating"><option value="">—</option><% [5,4,3,2,1].forEach(n => { %><option value="<%= n %>" <%= job.review_rating == n ? 'selected' : '' %>><%= '★'.repeat(n) %></option><% }) %></select></label>
-        <label class="span2">Review <textarea name="customer_review" rows="3"><%= job.customer_review || '' %></textarea></label>
-        <label class="span2">Internal notes <textarea name="notes" rows="3"><%= job.notes || '' %></textarea></label>
+        <label class="span2">What they said <textarea name="customer_review" rows="3"><%= job.customer_review || '' %></textarea></label>
       </div>
-      <div class="row"><button class="btn gold">Save job</button></div>
-    </section>
+    </details>
+    <div class="row" style="margin-top:18px"><button class="btn gold"><%= job.id ? 'Save changes' : 'Create job' %></button><a class="btn ghost" href="/admin/jobs">Cancel</a></div>
   </div>
   <aside class="card sticky">
     <h2>Summary</h2>
     <dl class="facts">
-      <dt>Quoted</dt><dd class="money"><%= job.quoted_price != null ? money(job.quoted_price) : '—' %></dd>
-      <dt>Actual cost</dt><dd class="money"><%= job.actual_cost != null ? money(job.actual_cost) : '—' %></dd>
+      <dt>Price</dt><dd class="money"><%= job.quoted_price != null ? money(job.quoted_price) : '—' %></dd>
+      <dt>Your cost</dt><dd class="money"><%= job.actual_cost != null ? money(job.actual_cost) : '—' %></dd>
       <dt>Profit</dt><dd class="money <%= profit != null ? (profit < 0 ? 'neg' : 'pos') : '' %>"><%= profit != null ? money(profit) : '—' %></dd>
       <dt>Margin</dt><dd><%= profit != null && job.quoted_price > 0 ? Math.round(profit / job.quoted_price * 100) + '%' : '—' %></dd>
       <dt>Per hour</dt><dd class="money"><%= profit != null && job.labor_hours > 0 ? money(Math.round(profit / job.labor_hours)) + '/hr' : '—' %></dd>
     </dl>
+    <p class="muted small" style="margin-bottom:0">Profit shows once you enter the total cost in step 4.</p>
   </aside>
 </form>
 <% if (job.id) { %>

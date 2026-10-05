@@ -39,7 +39,7 @@
         <thead><tr><th>Item</th><th>Details</th><th style="text-align:right">Amount</th><th></th></tr></thead>
         <tbody id="itemRows"></tbody>
       </table>
-      <div style="padding:12px 16px"><button type="button" class="btn ghost small" id="addBlank">+ Custom line</button></div>
+      <div style="padding:12px 16px"><button type="button" class="btn ghost small" id="addBlank">+ Custom line</button> <span class="muted small">or add items from the price book →</span></div>
       <div class="total-row"><span>Total</span><strong id="total">$0</strong></div>
     </section>
 
@@ -52,27 +52,41 @@
   </div>
 
   <aside class="card book sticky" id="book">
-    <h2 style="margin-bottom:6px">Price book</h2>
-    <p class="muted small" style="margin-top:0">Click to add. You can edit any amount after.</p>
-
-    <h3>Lawn package</h3>
-    <div class="row2">
-      <select id="lawnPkg"></select>
-      <select id="lawnSize"></select>
+    <h2 style="margin-bottom:12px">Price book</h2>
+    <div class="book-tabs" role="tablist">
+      <button type="button" role="tab" data-tab="lawn">Lawn care</button>
+      <button type="button" role="tab" data-tab="outdoor">Outdoor extras</button>
+      <button type="button" role="tab" data-tab="paint">Painting</button>
     </div>
-    <div class="opt"><span id="lawnRange" class="muted">—</span><span class="row"><button type="button" class="btn small ghost" data-lawn="lo">Add low</button><button type="button" class="btn small" data-lawn="hi">Add high</button></span></div>
 
-    <h3>Lawn conditions</h3>
-    <div id="adjList"></div>
+    <div class="pane" data-pane="lawn">
+      <h3>Lawn package</h3>
+      <div class="row2">
+        <label class="mini">Package <select id="lawnPkg"></select></label>
+        <label class="mini">Lawn size <select id="lawnSize"></select></label>
+      </div>
+      <p class="muted small" id="lawnIncludes" style="margin:2px 0 10px"></p>
+      <div class="mini-label">Choose a price</div>
+      <div class="choices" id="lawnChoices"></div>
+      <button type="button" class="btn full" id="addLawn" disabled>Choose a price first</button>
 
-    <h3>Outdoor add-ons</h3>
-    <div id="addonList"></div>
+      <h3>Lawn conditions</h3>
+      <p class="muted small" style="margin:-4px 0 6px">Extra charges for harder yards. Pick how much, then add.</p>
+      <div id="adjList"></div>
+    </div>
 
-    <h3>Painting packages</h3>
-    <div id="paintList"></div>
+    <div class="pane" data-pane="outdoor" hidden>
+      <h3>Cleanup &amp; pressure washing</h3>
+      <p class="muted small" style="margin:-4px 0 6px">Starting prices. You can change the amount after adding.</p>
+      <div id="addonList"></div>
+    </div>
 
-    <h3>Painting add-ons</h3>
-    <div id="paintAddonList"></div>
+    <div class="pane" data-pane="paint" hidden>
+      <h3>Painting packages</h3>
+      <div id="paintList"></div>
+      <h3>Painting add-ons</h3>
+      <div id="paintAddonList"></div>
+    </div>
   </aside>
 </form>
 

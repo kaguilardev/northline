@@ -1,24 +1,31 @@
 <%- include('../partials/head') %>
 <div class="pagehead"><h1>Estimate requests</h1><a class="btn ghost" href="/estimate" target="_blank">Open public form ↗</a></div>
-<form class="filters" method="get">
-  <select name="status" onchange="this.form.submit()">
-    <option value="">All requests</option>
-    <% statuses.forEach(s => { %><option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s %></option><% }) %>
-  </select>
-</form>
+<nav class="tabs" aria-label="Request stages">
+  <% tabs.forEach(t => { %><a href="/admin/requests<%= t.key === 'active' ? '' : '?status=' + t.key %>" class="<%= tab === t.key ? 'on' : '' %>"><%= t.label %> <span class="n"><%= t.n %></span></a><% }) %>
+</nav>
+<p class="muted small" style="margin:-6px 0 14px">
+  <% if (tab === 'archived') { %>Accepted and lost requests. Accepted ones are now customers in Clients.<% } else { %>Change the stage right from the list. When a customer accepts their quote, the request moves to Archived automatically.<% } %>
+</p>
 <div class="card flush">
   <table>
-    <thead><tr><th>Received</th><th>Name</th><th>Service</th><th>Address</th><th>Photos</th><th>Status</th></tr></thead>
+    <thead><tr><th>Received</th><th>Name</th><th>Service</th><th>Address</th><th>Photos</th><th>Stage</th></tr></thead>
     <tbody>
-    <% if (!requests.length) { %><tr><td colspan="6" class="muted center">No requests yet. They’ll appear here when customers use the estimate form.</td></tr><% } %>
+    <% if (!requests.length) { %><tr><td colspan="6" class="muted center"><%= tab === 'active' ? 'No open requests. They’ll appear here when customers use the estimate form.' : 'Nothing here right now.' %></td></tr><% } %>
     <% requests.forEach(r => { %>
-      <tr onclick="location='/admin/requests/<%= r.id %>'">
-        <td class="small"><%= fmtDate(r.created_at) %></td>
-        <td><strong><%= r.name %></strong><div class="muted small"><%= r.phone %></div></td>
+      <tr onclick="location='/admin/requests/<%= r.id %>'" class="<%= r.viewed_at ? '' : 'unread' %>">
+        <td class="small"><% if (!r.viewed_at) { %><span class="dot" title="Not opened yet"></span><% } %><%= fmtDate(r.created_at) %></td>
+        <td><strong><%= r.name %></strong><div class="muted small"><%= r.phone %><% if (r.last_message_at) { %> · ✉ emailed <%= fmtDate(r.last_message_at) %><% } %></div></td>
         <td><%= r.service %></td>
         <td class="small"><%= r.address %></td>
         <td><%= r.photo_count || '—' %></td>
-        <td><span class="pill <%= r.status %>"><%= r.status %></span></td>
+        <td onclick="event.stopPropagation()">
+          <form method="post" action="/admin/requests/<%= r.id %>/status">
+            <input type="hidden" name="back" value="<%= back %>">
+            <select name="status" class="stage-select <%= r.status %>" onchange="this.form.submit()" aria-label="Stage for <%= r.name %>">
+              <% stages.forEach(st => { %><option value="<%= st.key %>" <%= r.status === st.key ? 'selected' : '' %>><%= st.label %></option><% }) %>
+            </select>
+          </form>
+        </td>
       </tr>
     <% }) %>
     </tbody>

@@ -63,10 +63,21 @@ CREATE TABLE IF NOT EXISTS nl_requests (
   preferred_date  DATE,
   description     TEXT,
   status          TEXT NOT NULL DEFAULT 'new'
-                  CHECK (status IN ('new','contacted','quoted','won','lost')),
+                  CHECK (status IN ('new','lead','quoted','accepted','lost')),
   client_id       INTEGER REFERENCES nl_clients(id) ON DELETE SET NULL,
+  viewed_at       TIMESTAMPTZ,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Upgrade older databases: request stages are now new → lead → quoted → accepted / lost
+ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS viewed_at TIMESTAMPTZ;
+ALTER TABLE nl_requests DROP CONSTRAINT IF EXISTS nl_requests_status_check;
+UPDATE nl_requests SET status='lead' WHERE status='contacted';
+UPDATE nl_requests SET status='accepted' WHERE status='won';
+ALTER TABLE nl_requests ADD CONSTRAINT nl_requests_status_check CHECK (status IN ('new','lead','quoted','accepted','lost'));
+UPDATE nl_requests SET viewed_at=created_at WHERE viewed_at IS NULL AND status<>'new';
+-- Anyone who has accepted a quote is a customer, not a lead
+UPDATE nl_clients c SET status='scheduled' WHERE status IN ('lead','quoted')
+  AND EXISTS (SELECT 1 FROM nl_quotes q WHERE q.client_id=c.id AND q.status='accepted');
 
 -- ── Quotes / estimates ──
 CREATE TABLE IF NOT EXISTS nl_quotes (
@@ -127,3 +138,18 @@ CREATE TABLE IF NOT EXISTS nl_photos (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS nl_photos_owner_idx ON nl_photos (owner_type, owner_id);
+
+-- ── Emails sent to (and later received from) customers about a request ──
+CREATE TABLE IF NOT EXISTS nl_messages (
+  id          SERIAL PRIMARY KEY,
+  request_id  INTEGER REFERENCES nl_requests(id) ON DELETE CASCADE,
+  client_id   INTEGER REFERENCES nl_clients(id) ON DELETE SET NULL,
+  direction   TEXT NOT NULL DEFAULT 'out' CHECK (direction IN ('out','in')),
+  to_email    TEXT,
+  from_email  TEXT,
+  subject     TEXT,
+  body        TEXT NOT NULL,
+  sent_by     TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS nl_messages_request_idx ON nl_messages (request_id, created_at);

@@ -1,13 +1,32 @@
 <%- include('../partials/head') %>
+<% const stage = stages.find(s => s.key === r.status) || stages[0]; %>
 <div class="pagehead">
   <div><a href="/admin/requests" class="muted small">← All requests</a><h1 style="margin-top:6px"><%= r.name %></h1></div>
   <div class="row">
     <a class="btn gold" href="/admin/quotes/new?request=<%= r.id %>">Create quote</a>
-    <% if (r.email) { %><a class="btn ghost" href="mailto:<%= r.email %>">Email</a><% } %>
+    <% if (r.email) { %><a class="btn ghost" href="#messages">Email</a><% } %>
     <% if (r.phone) { %><a class="btn ghost" href="tel:<%= r.phone %>">Call</a><% } %>
   </div>
 </div>
-<div class="grid2 wide-left">
+<% if (flash) { %><p class="<%= /sent to/.test(flash) ? 'success' : 'notice' %>"><%= flash %></p><% } %>
+
+<section class="card status-card">
+  <div class="status-now">
+    <span class="k">Stage</span>
+    <span class="pill big <%= r.status %>"><%= stage.label %></span>
+    <span class="muted"><%= stage.hint %></span>
+  </div>
+  <form method="post" action="/admin/requests/<%= r.id %>/status" class="stepper" aria-label="Change stage">
+    <% stages.forEach((st, i) => { const idx = stages.findIndex(s => s.key === r.status); const done = st.key !== 'lost' && r.status !== 'lost' && i < idx; %>
+      <button name="status" value="<%= st.key %>" class="step <%= st.key === r.status ? 'on' : '' %> <%= done ? 'done' : '' %> <%= st.key === 'lost' ? 'lost' : '' %>" <%= st.key === r.status ? 'aria-current=step' : '' %> title="<%= st.hint %>">
+        <span class="b"><%= done ? '✓' : (st.key === 'lost' ? '✕' : i + 1) %></span><%= st.label %>
+      </button>
+    <% }) %>
+  </form>
+  <p class="muted small" style="margin:10px 0 0">Click a stage to move this request. Creating a quote moves it to Quoted; when the customer accepts, it moves to Accepted and is archived.</p>
+</section>
+
+<div class="grid2 wide-left" style="margin-top:18px">
   <section class="card">
     <dl class="facts">
       <dt>Service</dt><dd><strong><%= r.service %></strong></dd>
@@ -26,18 +45,37 @@
   </section>
   <div>
     <section class="card">
-      <h2>Status</h2>
-      <form method="post" action="/admin/requests/<%= r.id %>/status" class="row">
-        <select name="status" style="flex:1;margin:0"><% statuses.forEach(s => { %><option value="<%= s %>" <%= r.status === s ? 'selected' : '' %>><%= s %></option><% }) %></select>
-        <button class="btn">Update</button>
-      </form>
-    </section>
-    <section class="card" style="margin-top:18px">
       <h2>Quotes</h2>
       <% if (!quotes.length) { %><p class="muted">No quote yet.</p><% } %>
-      <ul class="list"><% quotes.forEach(q => { %><li><a href="/admin/quotes/<%= q.id %>"><strong><%= q.number %></strong></a><span class="muted"><%= money(q.total) %></span><span class="date"><span class="pill <%= q.status %>"><%= q.status %></span></span></li><% }) %></ul>
+      <ul class="list"><% quotes.forEach(q => { %><li><a href="/admin/quotes/<%= q.id %>"><strong><%= q.number %></strong></a><span class="muted"><%= money(q.total) %></span><span class="date"><span class="pill <%= q.status %>"><%= q.status === 'sent' ? 'awaiting customer' : q.status %></span></span></li><% }) %></ul>
       <a class="btn small gold" href="/admin/quotes/new?request=<%= r.id %>">+ New quote</a>
     </section>
+
+    <section class="card" id="messages" style="margin-top:18px">
+      <h2>Emails</h2>
+      <% if (!messages.length) { %><p class="muted small" style="margin-top:0">No emails yet. Messages you send from here are saved on this request.</p><% } %>
+      <div class="thread">
+        <% messages.forEach(m => { %>
+          <div class="msg <%= m.direction %>">
+            <div class="meta"><strong><%= m.direction === 'out' ? 'You' : r.name %></strong> · <%= new Date(m.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) %></div>
+            <div class="subj"><%= m.subject %></div>
+            <div class="body"><%= m.body %></div>
+          </div>
+        <% }) %>
+      </div>
+      <% if (r.email) { %>
+      <form method="post" action="/admin/requests/<%= r.id %>/message" class="form compose">
+        <label>To <input value="<%= r.name %> <<%= r.email %>>" disabled></label>
+        <label>Subject <input name="subject" required value="<%= messages.length ? 'Re: ' + messages[messages.length - 1].subject.replace(/^Re: /, '') : 'Your estimate request — ' + business %>"></label>
+        <label>Message <textarea name="body" rows="5" required placeholder="Hi <%= r.name.split(' ')[0] %>, thanks for reaching out…"></textarea></label>
+        <div class="row">
+          <button class="btn gold" <%= emailEnabled ? '' : 'disabled' %>>Send email</button>
+          <span class="muted small"><%= emailEnabled ? 'Replies go to your business inbox.' : 'Sending turns on once RESEND_API_KEY is set.' %></span>
+        </div>
+      </form>
+      <% } else { %><p class="muted small">No email address on this request.</p><% } %>
+    </section>
+
     <form method="post" action="/admin/requests/<%= r.id %>/delete" onsubmit="return confirm('Delete this request and its photos?')" style="margin-top:14px">
       <button class="link danger small">Delete request</button>
     </form>

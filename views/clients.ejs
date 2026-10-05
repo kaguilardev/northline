@@ -1,22 +1,27 @@
 <%- include('partials/head', { title: 'Clients' }) %>
 <div class="pagehead">
-  <h1>Clients</h1>
+  <div><h1><%= prospects ? 'Prospects' : 'Clients' %></h1>
+    <p class="muted small" style="margin:6px 0 0"><%= prospects ? 'People you’ve quoted who haven’t booked yet. They move to Clients when they accept.' : 'Customers who have booked work with you. New leads live in Requests until they accept a quote.' %></p></div>
   <a class="btn" href="/admin/clients/new">+ Add client</a>
 </div>
 <form class="filters" method="get">
+  <% if (prospects) { %><input type="hidden" name="prospects" value="1"><% } %>
   <input type="search" name="q" value="<%= q %>" placeholder="Search name, email or address">
+  <% if (!prospects) { %>
   <select name="status" onchange="this.form.submit()">
-    <option value="">All statuses</option>
-    <% ['lead','quoted','scheduled','in_progress','completed','on_hold'].forEach(s => { %>
+    <option value="">All customers</option>
+    <% statuses.forEach(s => { %>
       <option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s.replace('_',' ') %></option>
     <% }) %>
   </select>
+  <% } %>
+  <% if (prospects) { %><a class="btn ghost small" href="/admin/clients">← Back to clients</a><% } else if (prospectCount) { %><a class="muted small" href="/admin/clients?prospects=1">Show <%= prospectCount %> prospect<%= prospectCount === 1 ? '' : 's' %> →</a><% } %>
 </form>
 <div class="card flush">
   <table>
     <thead><tr><th>Name</th><th>Service</th><th>Status</th><th>Next visit</th><th>Contact</th></tr></thead>
     <tbody>
-    <% if (!clients.length) { %><tr><td colspan="5" class="muted center">No clients yet.</td></tr><% } %>
+    <% if (!clients.length) { %><tr><td colspan="5" class="muted center"><%= prospects ? 'No prospects right now.' : 'No customers yet. People show up here once they accept a quote or you book a job.' %></td></tr><% } %>
     <% clients.forEach(c => { %>
       <tr onclick="location='/admin/clients/<%= c.id %>'">
         <td><strong><%= c.name %></strong><div class="muted small"><%= c.address || '' %></div></td>

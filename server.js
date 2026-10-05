@@ -59,10 +59,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Badge with the number of new estimate requests in the admin menu
+// Badge in the admin menu: estimate requests nobody has opened yet
 app.use('/admin', async (req, res, next) => {
   if (!req.session.admin) return next();
-  try { res.locals.newRequests = (await db.query(`SELECT count(*)::int AS n FROM nl_requests WHERE status='new'`)).rows[0].n; } catch { /* ignore */ }
+  try { res.locals.newRequests = (await db.query(`SELECT count(*)::int AS n FROM nl_requests WHERE viewed_at IS NULL`)).rows[0].n; } catch { /* ignore */ }
   next();
 });
 

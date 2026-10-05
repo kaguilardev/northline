@@ -38,7 +38,7 @@
           <% lawnPackages.forEach(p => { %>
           <tr><td><%= p.name %></td><% lawnSizes.forEach(s => { %><td><%= range(p.prices[s.key]) %></td><% }) %></tr>
           <% }) %>
-          <tr class="custom"><td>20,000+ ft²</td><td colspan="4">Custom quote — send us a few photos</td></tr>
+          <tr class="custom"><td>20,000+ ft²</td><td colspan="4"><a href="/estimate?service=landscaping">Custom quote — send us a few photos →</a></td></tr>
         </tbody>
       </table>
     </div>
@@ -55,7 +55,7 @@
       <div class="reveal">
         <h3>What can affect your price</h3>
         <p class="muted">Our published prices are starting prices for regular maintenance. A visit may cost more if the yard has:</p>
-        <div class="chips"><% lawnAdjustments.forEach(a => { %><span class="chip"><%= a.name %></span><% }) %><span class="chip">Overgrown / neglected yard</span></div>
+        <div class="chips"><% lawnAdjustments.forEach(a => { %><span class="chip"><%= a.name %></span><% }) %></div>
       </div>
       <div class="note reveal"><%- icon('clipboard') %><div><strong>Starting prices.</strong> <%= policy.general %> <%= policy.lawn %></div></div>
     </div>

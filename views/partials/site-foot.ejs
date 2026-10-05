@@ -4,7 +4,7 @@
     <div class="cols">
       <div>
         <img class="flogo" src="/img/logo-light.png" alt="Northline Home & Outdoor" loading="lazy">
-        <p style="margin:18px 0 0;max-width:300px">Residential painting, landscaping, pressure washing, remodeling, decks &amp; fences. Professional quality at a fair price.</p>
+        <p style="margin:12px 0 0;max-width:300px">Residential painting, landscaping, pressure washing, remodeling, decks &amp; fences. Professional quality at a fair price.</p>
         <div class="motto">Clean • Reliable • Professional</div>
       </div>
       <div>
@@ -23,7 +23,7 @@
       <div>
         <h4>Service Area</h4>
         <ul><% areas.forEach(a => { %><li><%= a %></li><% }) %></ul>
-        <% if (contact.phone) { %><p style="margin-top:16px"><a href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%= contact.phone %></a></p><% } %>
+        <% if (contact.phone) { %><p style="margin:10px 0 0"><a href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%= contact.phone %></a></p><% } %>
         <% if (contact.email) { %><p style="margin:4px 0 0"><a href="mailto:<%= contact.email %>"><%= contact.email %></a></p><% } %>
       </div>
     </div>
@@ -43,6 +43,17 @@
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
     }, { threshold: 0.12 });
     els.forEach(function (e) { io.observe(e); });
+  })();
+  // Services dropdown: opens on hover (CSS) or click/tap, closes on outside click or Esc
+  (function () {
+    document.querySelectorAll('.dd').forEach(function (dd) {
+      var btn = dd.querySelector('.dd-toggle');
+      function set(open) { dd.classList.toggle('open', open); btn.setAttribute('aria-expanded', open); }
+      btn.addEventListener('click', function () { set(!dd.classList.contains('open')); });
+      document.addEventListener('click', function (e) { if (!dd.contains(e.target)) set(false); });
+      dd.addEventListener('keydown', function (e) { if (e.key === 'Escape') { set(false); btn.focus(); } });
+      dd.addEventListener('focusout', function (e) { if (!dd.contains(e.relatedTarget)) set(false); });
+    });
   })();
 </script>
 </body>
