@@ -5,7 +5,7 @@ services:
     name: northline
     runtime: node
     plan: free
-    buildCommand: npm ci
+    buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /healthz
     autoDeploy: true
