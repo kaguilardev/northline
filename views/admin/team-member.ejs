@@ -13,14 +13,16 @@
 <% } %>
 <div class="grid2 wide-left" style="align-items:start;margin-top:18px">
   <form class="card form" method="post" action="/admin/team/<%= u.id %>">
+    <% if (locked) { %><p class="notice small" style="margin-top:0">This is an owner account. Only an owner can change it.</p><fieldset disabled style="border:0;padding:0;margin:0"><% } %>
     <label>Name <input name="name" value="<%= u.name || '' %>"></label>
     <label>Email <input value="<%= u.email %>" disabled></label>
     <label>Mobile <input type="tel" name="phone" value="<%= u.phone || '' %>"></label>
     <label>Role
-      <select name="role" <%= isSelf ? 'disabled' : '' %>><% roles.forEach(r => { %><option value="<%= r.key %>" <%= u.role === r.key ? 'selected' : '' %>><%= r.label %> — <%= r.hint %></option><% }) %></select>
+      <select name="role" <%= isSelf ? 'disabled' : '' %>><% (locked ? roles : assignable).forEach(r => { %><option value="<%= r.key %>" <%= u.role === r.key ? 'selected' : '' %>><%= r.label %> — <%= r.hint %></option><% }) %></select>
       <% if (isSelf) { %><small class="muted">You can’t change your own role.</small><% } %></label>
     <label class="check"><input type="checkbox" name="active" <%= u.active ? 'checked' : '' %> <%= isSelf ? 'disabled' : '' %>> Can sign in <small class="muted">— untick to switch off their access right away</small></label>
     <button class="btn">Save</button>
+    <% if (locked) { %></fieldset><% } %>
   </form>
   <section class="card">
     <h2>Sign-in</h2>
@@ -30,7 +32,7 @@
       <% if (u.invite_open) { %><dt>Open link</dt><dd>Expires <%= fmtDate(u.invite_expires) %></dd><% } %>
     </dl>
     <p class="muted small">Not set up yet, or forgot their password? Send a new link — it replaces any older one.</p>
-    <% if (u.active) { %>
+    <% if (u.active && !locked) { %>
     <form method="post" action="/admin/team/<%= u.id %>/link" class="row">
       <button class="btn small gold" name="via" value="link">Make new link</button>
       <button class="btn small ghost" name="via" value="email" <%= emailEnabled ? '' : 'disabled title="Email sending is off"' %>>Email new link</button>

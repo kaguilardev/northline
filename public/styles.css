@@ -306,3 +306,4 @@ tr.inactive td { opacity: .5; }
 .auth-lang .lang a { color: var(--muted); }
 .auth-lang .lang a.on { color: var(--green); }
 .crewbar { gap: 12px; }
+.warn-text { color: var(--danger); font-weight: 600; }

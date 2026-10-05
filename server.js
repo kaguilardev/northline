@@ -58,6 +58,9 @@ app.use((req, res, next) => {
   res.locals.user = user;
   res.locals.admin = user && STAFF.includes(user.role) ? user : null; // office screens
   res.locals.isOwner = !!(user && user.role === 'owner');
+  // A real first name for greetings — never a placeholder like "Owner" or "Admin"
+  const first = user && user.name ? user.name.trim().split(/\s+/)[0] : '';
+  res.locals.firstName = first && !['owner', 'admin', 'crew'].includes(first.toLowerCase()) ? first : '';
   res.locals.path = req.path;
   res.locals.business = process.env.BUSINESS_NAME || 'Northline Home & Outdoor';
   next();
@@ -94,6 +97,7 @@ app.use((err, req, res, next) => {
   try {
     await db.migrate();
     await bootstrapAdmin();
+    await require('./lib/pipeline').backfillAcceptedJobs();
   } catch (e) {
     console.error('\n  Could not connect to the database:', e.message, '\n');
     process.exit(1);

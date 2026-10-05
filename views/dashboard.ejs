@@ -1,6 +1,7 @@
 <%- include('partials/head', { title: 'Dashboard' }) %>
 <div class="pagehead">
-  <h1>Good to see you<%= admin.name ? ', ' + admin.name : '' %>.</h1>
+  <h1>Good to see you<%= firstName ? ', ' + firstName : '' %>.</h1>
+  <% if (!firstName) { %><a class="muted small" href="/admin/team/<%= admin.id %>">Add your name →</a><% } %>
   <div class="row"><a class="btn gold" href="/admin/quotes/new">+ New quote</a><a class="btn ghost" href="/admin/jobs/new">+ New job</a></div>
 </div>
 <div class="kpis">

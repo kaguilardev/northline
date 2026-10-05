@@ -32,7 +32,7 @@
     <summary aria-label="Account menu"><span class="avatar"><%= (admin.name || admin.email).trim()[0].toUpperCase() %></span><span class="acct-name"><%= (admin.name || admin.email).split(' ')[0] %></span> ▾</summary>
     <div class="acct-menu">
       <a href="/crew">My jobs</a>
-      <% if (isOwner) { %><a href="/admin/team" class="<%= path.startsWith('/admin/team') ? 'on' : '' %>">Team &amp; access</a><% } %>
+      <a href="/admin/team" class="<%= path.startsWith('/admin/team') ? 'on' : '' %>">Team &amp; access</a>
       <a href="/" target="_blank">View website ↗</a>
       <form method="post" action="/logout"><button>Sign out</button></form>
     </div>

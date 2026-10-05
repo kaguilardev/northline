@@ -11,7 +11,7 @@
    </a>`;
    function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); } %>
 <div class="crew-wrap">
-  <h1 class="crew-h">Hi<% if (user.name) { %>, <span translate="no"><%= user.name.split(' ')[0] %></span><% } %> 👋</h1>
+  <h1 class="crew-h">Hi<% if (firstName) { %>, <span translate="no"><%= firstName %></span><% } else { %> there<% } %> 👋</h1>
   <section>
     <h2 class="crew-sec">Today</h2>
     <% if (!groups.today.length) { %><p class="empty-note">Nothing on the schedule for today.</p><% } %>

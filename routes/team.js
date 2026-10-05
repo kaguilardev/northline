@@ -1,12 +1,16 @@
-// Owner only: team accounts, roles and sign-in links.
+// Team accounts, roles and sign-in links. Owners and admins can manage the team;
+// only an owner can create an owner or change / switch off an owner's account.
 const express = require('express');
 const db = require('../db');
-const { ROLES, requireOwner, issueInvite } = require('../lib/auth');
+const { ROLES, requireAdmin, issueInvite } = require('../lib/auth');
 const { sendMessage, enabled: emailEnabled } = require('../lib/email');
 const { baseUrl } = require('./public');
 
 const router = express.Router();
-router.use('/admin/team', requireOwner);
+router.use('/admin/team', requireAdmin);
+const isOwner = (req) => req.session.user.role === 'owner';
+// Roles this person may hand out
+const assignable = (req) => ROLES.filter((r) => isOwner(req) || r.key !== 'owner');
 const ROLE_KEYS = ROLES.map((r) => r.key);
 const clean = (v, n = 200) => String(v || '').trim().slice(0, n);
 
@@ -26,15 +30,15 @@ async function listUsers() {
 
 router.get('/admin/team', async (req, res, next) => {
   try {
-    res.render('admin/team', { title: 'Team', users: await listUsers(), roles: ROLES, error: null, form: {} });
+    res.render('admin/team', { title: 'Team', users: await listUsers(), roles: ROLES, assignable: assignable(req), error: null, form: {} });
   } catch (e) { next(e); }
 });
 
 router.post('/admin/team', async (req, res, next) => {
   try {
     const form = { name: clean(req.body.name), email: clean(req.body.email).toLowerCase(), phone: clean(req.body.phone, 40), role: req.body.role };
-    const fail = async (error) => res.status(400).render('admin/team', { title: 'Team', users: await listUsers(), roles: ROLES, error, form });
-    if (!form.name || !form.email || !ROLE_KEYS.includes(form.role)) return fail('Add a name, email and role.');
+    const fail = async (error) => res.status(400).render('admin/team', { title: 'Team', users: await listUsers(), roles: ROLES, assignable: assignable(req), error, form });
+    if (!form.name || !form.email || !assignable(req).some((r) => r.key === form.role)) return fail('Add a name, email and role.');
     if ((await db.query('SELECT 1 FROM nl_admins WHERE lower(email)=$1', [form.email])).rows[0]) return fail('Someone on the team already uses that email.');
     const { rows } = await db.query(`INSERT INTO nl_admins (name, email, phone, role, password_hash) VALUES ($1,$2,$3,$4,NULL) RETURNING id`,
       [form.name, form.email, form.phone || null, form.role]);
@@ -49,7 +53,8 @@ router.get('/admin/team/:id', async (req, res, next) => {
       invite_expires, invite_expires > now() AS invite_open FROM nl_admins WHERE id=$1`, [req.params.id])).rows[0];
     if (!u) return res.status(404).render('error', { message: 'Team member not found.' });
     const link = takeLink(req);
-    res.render('admin/team-member', { title: u.name || u.email, u, roles: ROLES, link: link && String(link.id) === String(u.id) ? link : null,
+    const locked = u.role === 'owner' && !isOwner(req); // admins can view an owner's account but not change it
+    res.render('admin/team-member', { title: u.name || u.email, u, roles: ROLES, assignable: assignable(req), locked, link: link && String(link.id) === String(u.id) ? link : null,
       isSelf: u.id === req.session.user.id, emailEnabled: emailEnabled(), flash: req.query.flash || null, error: null });
   } catch (e) { next(e); }
 });
@@ -62,6 +67,7 @@ router.post('/admin/team/:id', async (req, res, next) => {
     const active = req.body.active === 'on';
     const current = (await db.query('SELECT role, active FROM nl_admins WHERE id=$1', [id])).rows[0];
     if (!current) return res.redirect('/admin/team');
+    if (!isOwner(req) && (current.role === 'owner' || role === 'owner')) return res.status(403).render('error', { message: 'Only an owner can change an owner account or make someone an owner.' });
     // Never lock the business out: you can't demote or switch off yourself, and there must always be an active owner
     const newRole = isSelf ? current.role : (role || current.role);
     const newActive = isSelf ? true : active;
@@ -77,8 +83,9 @@ router.post('/admin/team/:id', async (req, res, next) => {
 // New sign-in link: for someone who hasn't set up yet, or who forgot their password.
 router.post('/admin/team/:id/link', async (req, res, next) => {
   try {
-    const u = (await db.query('SELECT id, name, email, active FROM nl_admins WHERE id=$1', [req.params.id])).rows[0];
+    const u = (await db.query('SELECT id, name, email, role, active FROM nl_admins WHERE id=$1', [req.params.id])).rows[0];
     if (!u || !u.active) return res.redirect('/admin/team');
+    if (u.role === 'owner' && !isOwner(req) && u.id !== req.session.user.id) return res.status(403).render('error', { message: 'Only an owner can make a sign-in link for an owner account.' });
     const url = `${baseUrl(req)}/invite/${await issueInvite(u.id)}`;
     let flash = null;
     if (req.body.via === 'email') {

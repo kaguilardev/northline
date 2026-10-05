@@ -4,10 +4,10 @@
   <table>
     <thead><tr><th>Date</th><th>Client</th><th>Service / package</th><th>Crew</th><th>Status</th><th>Payment</th><th style="text-align:right">Quoted</th><th style="text-align:right">Profit</th></tr></thead>
     <tbody>
-    <% if (!jobs.length) { %><tr><td colspan="8" class="muted center">No jobs yet. Create one from an accepted quote.</td></tr><% } %>
+    <% if (!jobs.length) { %><tr><td colspan="8" class="muted center">No jobs yet. When a customer accepts a quote, the job appears here automatically.</td></tr><% } %>
     <% jobs.forEach(j => { %>
       <tr onclick="location='/admin/jobs/<%= j.id %>'">
-        <td class="small"><%= j.job_date ? fmtDate(j.job_date) : '—' %></td>
+        <td class="small"><%- j.job_date ? fmtDate(j.job_date) : '<span class="warn-text">Needs a date</span>' %></td>
         <td><strong><%= j.client_name || '—' %></strong></td>
         <td><%= j.service || '' %><div class="muted small"><%= j.package || '' %></div></td>
         <td class="small"><%= j.employees || '—' %></td>

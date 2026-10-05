@@ -13,7 +13,7 @@
    const banner = {
      draft: ['Draft — not sent yet', 'Send it to the customer using the options on the right.'],
      sent: ['Waiting on the customer', 'Sent ' + when(quote.sent_at) + '. You’ll see it change here as soon as they accept or decline.'],
-     accepted: ['Accepted by the customer', when(quote.responded_at) + (job ? ' — the job has been created.' : ' — next step: create the job to schedule the work.')],
+     accepted: ['Accepted by the customer', when(quote.responded_at) + (job ? ' — the job is created. Next: give it a date and crew.' : ' — next step: create the job to schedule the work.')],
      declined: ['Declined', 'The customer declined on ' + when(quote.responded_at) + '. You can edit the quote and send it again.'],
    }[st]; %>
 <section class="card status-card <%= st %>">
@@ -22,6 +22,7 @@
     <span class="pill big <%= st %>"><%= st === 'sent' ? 'Awaiting customer' : st %></span>
     <span><strong><%= banner[0] %></strong> <span class="muted">· <%= banner[1] %></span></span>
     <% if (st === 'accepted' && !job) { %><a class="btn gold" style="margin-left:auto" href="/admin/jobs/new?quote=<%= quote.id %>">Create job →</a><% } %>
+    <% if (st === 'accepted' && job) { %><a class="btn gold" style="margin-left:auto" href="/admin/jobs/<%= job.id %>">Schedule the job →</a><% } %>
   </div>
   <ol class="track">
     <li class="done"><span class="b">✓</span>Created<small><%= when(quote.created_at) %></small></li>

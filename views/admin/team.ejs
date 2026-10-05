@@ -26,7 +26,7 @@
     <label>Email <small class="muted">— they sign in with this</small><input type="email" name="email" required value="<%= form.email || '' %>"></label>
     <label>Mobile <small class="muted">— optional</small><input type="tel" name="phone" value="<%= form.phone || '' %>"></label>
     <label>Role
-      <select name="role" required><% roles.forEach(r => { %><option value="<%= r.key %>" <%= (form.role || 'crew') === r.key ? 'selected' : '' %>><%= r.label %></option><% }) %></select></label>
+      <select name="role" required><% assignable.forEach(r => { %><option value="<%= r.key %>" <%= (form.role || 'crew') === r.key ? 'selected' : '' %>><%= r.label %></option><% }) %></select></label>
     <button class="btn gold full">Add &amp; get sign-in link</button>
     <p class="muted small" style="margin-bottom:0">You’ll get a one-time link to text or email them. They open it and choose their own password.</p>
   </form>
