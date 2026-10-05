@@ -1,0 +1,33 @@
+<%- include('../partials/site-head', { title: 'Services' }) %>
+<section class="page-hero">
+  <div class="container">
+    <div class="label">Our services</div>
+    <h1>Everything your home needs, inside and out.</h1>
+    <p class="lede">We’re not just a lawn company and not just painters. Northline is one team you can call for maintenance and improvements around your home.</p>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>
+<section class="section">
+  <div class="container grid" style="gap:28px">
+    <% const details = {
+      landscaping: { list: ['Recurring mowing, trimming, edging & blowing', 'Leaf and yard cleanups', 'Packages from $49 per visit'], cta: 'See lawn care pricing' },
+      painting: { list: ['Interior & exterior painting', 'Trim, doors and cabinets', 'Deck & fence staining'], cta: 'See painting pricing' },
+      pressure: { list: ['Driveways, sidewalks & walkways', 'Patios, decks & outdoor furniture', 'Trash bin cleaning'], cta: 'See pressure washing pricing' },
+      remodeling: { list: ['Interior updates and repairs', 'Drywall patching and prep', 'Custom quote for every project'], cta: 'Request a remodeling estimate' },
+      decks: { list: ['Deck and fence cleaning', 'Staining and sealing', 'Repairs and upgrades'], cta: 'Request a deck or fence estimate' },
+    }; %>
+    <% services.forEach(s => { const d = details[s.key]; %>
+    <div class="card reveal svc-row" id="<%= s.key %>">
+      <span class="medal"><%- icon(s.icon) %></span>
+      <div>
+        <h3 style="font-size:26px"><%= s.name %></h3>
+        <p class="muted" style="margin:8px 0 14px"><%= s.blurb %></p>
+        <div class="chips"><% d.list.forEach(l => { %><span class="chip"><%- icon('check') %><%= l %></span><% }) %></div>
+      </div>
+      <a class="btn btn-ghost" href="<%= s.href.includes('#') ? '/estimate?service=' + s.key : s.href %>"><%= d.cta %></a>
+    </div>
+    <% }) %>
+  </div>
+</section>
+<%- include('../partials/cta') %>
+<%- include('../partials/site-foot') %>

@@ -1,0 +1,46 @@
+<%- include('../partials/head') %>
+<div class="pagehead">
+  <div><a href="/admin/requests" class="muted small">← All requests</a><h1 style="margin-top:6px"><%= r.name %></h1></div>
+  <div class="row">
+    <a class="btn gold" href="/admin/quotes/new?request=<%= r.id %>">Create quote</a>
+    <% if (r.email) { %><a class="btn ghost" href="mailto:<%= r.email %>">Email</a><% } %>
+    <% if (r.phone) { %><a class="btn ghost" href="tel:<%= r.phone %>">Call</a><% } %>
+  </div>
+</div>
+<div class="grid2 wide-left">
+  <section class="card">
+    <dl class="facts">
+      <dt>Service</dt><dd><strong><%= r.service %></strong></dd>
+      <dt>Phone</dt><dd><%= r.phone || '—' %></dd>
+      <dt>Email</dt><dd><%= r.email || '—' %></dd>
+      <dt>Address</dt><dd><%= r.address || '—' %><% if (r.address) { %> · <a href="https://maps.google.com/?q=<%= encodeURIComponent(r.address) %>" target="_blank">Map ↗</a><% } %></dd>
+      <dt>Preferred</dt><dd><%= r.preferred_date ? fmtDate(r.preferred_date) : '—' %></dd>
+      <dt>Received</dt><dd><%= new Date(r.created_at).toLocaleString('en-US') %></dd>
+      <dt>Description</dt><dd style="white-space:pre-line"><%= r.description || '—' %></dd>
+    </dl>
+    <h2 style="margin-top:26px">Photos</h2>
+    <% if (!photos.length) { %><p class="muted">No photos were uploaded.</p><% } %>
+    <div class="photos">
+      <% photos.forEach(p => { %><div class="photo-cell"><a href="/photo/<%= p.id %>" target="_blank"><img src="/photo/<%= p.id %>" alt="<%= p.filename %>" loading="lazy"></a></div><% }) %>
+    </div>
+  </section>
+  <div>
+    <section class="card">
+      <h2>Status</h2>
+      <form method="post" action="/admin/requests/<%= r.id %>/status" class="row">
+        <select name="status" style="flex:1;margin:0"><% statuses.forEach(s => { %><option value="<%= s %>" <%= r.status === s ? 'selected' : '' %>><%= s %></option><% }) %></select>
+        <button class="btn">Update</button>
+      </form>
+    </section>
+    <section class="card" style="margin-top:18px">
+      <h2>Quotes</h2>
+      <% if (!quotes.length) { %><p class="muted">No quote yet.</p><% } %>
+      <ul class="list"><% quotes.forEach(q => { %><li><a href="/admin/quotes/<%= q.id %>"><strong><%= q.number %></strong></a><span class="muted"><%= money(q.total) %></span><span class="date"><span class="pill <%= q.status %>"><%= q.status %></span></span></li><% }) %></ul>
+      <a class="btn small gold" href="/admin/quotes/new?request=<%= r.id %>">+ New quote</a>
+    </section>
+    <form method="post" action="/admin/requests/<%= r.id %>/delete" onsubmit="return confirm('Delete this request and its photos?')" style="margin-top:14px">
+      <button class="link danger small">Delete request</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/foot') %>

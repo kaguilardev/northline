@@ -5,7 +5,7 @@ services:
     name: northline
     runtime: node
     plan: free
-    buildCommand: npm ci
+    buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /healthz
     autoDeploy: true
@@ -21,7 +21,15 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: BUSINESS_NAME
-        value: Northline Landscaping
+        value: Northline Home & Outdoor
+      - key: BUSINESS_PHONE
+        sync: false
+      - key: BUSINESS_EMAIL
+        sync: false
+      - key: NOTIFY_EMAIL
+        sync: false
+      - key: PUBLIC_URL
+        sync: false
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD

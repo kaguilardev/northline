@@ -1,0 +1,56 @@
+<%- include('../partials/site-head', { title: 'Request a Free Estimate' }) %>
+<section class="page-hero">
+  <div class="container">
+    <div class="label">Request an estimate</div>
+    <h1>Get your free estimate.</h1>
+    <p class="lede">Tell us about your project and add a few photos. Photos let us give you a quote quickly — often without a site visit.</p>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>
+<section class="section">
+  <div class="container" style="display:grid;grid-template-columns:1.5fr 1fr;gap:48px;align-items:start" id="estimate-grid">
+    <form class="form-card" method="post" action="/estimate" enctype="multipart/form-data">
+      <% if (error) { %><p class="alert"><%= error %></p><% } %>
+      <div class="fgrid">
+        <label class="field"><span>Name *</span><input name="name" required autocomplete="name" value="<%= form.name || '' %>"></label>
+        <label class="field"><span>Phone *</span><input name="phone" type="tel" required autocomplete="tel" value="<%= form.phone || '' %>"></label>
+        <label class="field"><span>Email *</span><input name="email" type="email" required autocomplete="email" value="<%= form.email || '' %>"></label>
+        <label class="field"><span>Preferred date <em>(optional)</em></span><input name="preferred_date" type="date" value="<%= form.preferred_date || '' %>"></label>
+        <label class="field full"><span>Property address *</span><input name="address" required autocomplete="street-address" value="<%= form.address || '' %>"></label>
+        <label class="field full"><span>Service needed *</span>
+          <select name="service" required>
+            <option value="">Choose a service…</option>
+            <% serviceOptions.forEach(o => { %><option value="<%= o %>" <%= form.service === o ? 'selected' : '' %>><%= o %></option><% }) %>
+          </select>
+        </label>
+        <label class="field full"><span>Project description</span><textarea name="description" rows="5" placeholder="What would you like done? For lawn care, an approximate lawn size helps."><%= form.description || '' %></textarea></label>
+        <label class="field full"><span>Photos <em>(up to 8)</em></span>
+          <span class="drop" id="drop">
+            <%- icon('camera') %>
+            <strong>Tap to add photos</strong>
+            <span class="muted" style="font-size:13px">Front yard, problem areas, rooms or surfaces to paint</span>
+            <span class="files" id="files"></span>
+            <input type="file" name="photos" accept="image/*" multiple id="photos">
+          </span>
+        </label>
+      </div>
+      <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn btn-gold btn-lg" type="submit">Send My Request <%- icon('arrow') %></button>
+    </form>
+    <aside class="aside-list">
+      <div><span class="medal"><%- icon('clock') %></span><div><h3>Quick response</h3><p>We review every request and get back to you with next steps.</p></div></div>
+      <div><span class="medal"><%- icon('camera') %></span><div><h3>Photos save time</h3><p>Clear photos let us estimate most jobs without driving out first.</p></div></div>
+      <div><span class="medal"><%- icon('clipboard') %></span><div><h3>Clear, written estimates</h3><p>You’ll get a professional, itemized estimate you can accept online.</p></div></div>
+      <div><span class="medal"><%- icon('pin') %></span><div><h3>Service area</h3><p><%= areas.join(' • ') %></p></div></div>
+    </aside>
+  </div>
+</section>
+<script>
+  var inp = document.getElementById('photos'), out = document.getElementById('files');
+  inp.addEventListener('change', function () {
+    var n = inp.files.length;
+    out.textContent = n ? n + ' photo' + (n > 1 ? 's' : '') + ' selected' + (n > 8 ? ' — only the first 8 will be sent' : '') : '';
+  });
+</script>
+<style>@media (max-width: 820px) { #estimate-grid { grid-template-columns: 1fr !important; } }</style>
+<%- include('../partials/site-foot') %>

@@ -1,0 +1,41 @@
+<%- include('../partials/site-head', { title: 'Pressure Washing', description: 'Driveway, walkway, patio and deck pressure washing in Durham, Raleigh, Cary and Chapel Hill.' }) %>
+<section class="page-hero">
+  <div class="container">
+    <div class="label">Pressure washing</div>
+    <h1>Instant curb appeal.</h1>
+    <p class="lede">Years of dirt, mildew and stains gone from your outdoor surfaces. Book it on its own, or bundle it with lawn care in our Curb Appeal and Full Refresh packages.</p>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>
+<section class="section">
+  <div class="container split">
+    <div class="reveal">
+      <div class="label">What we clean</div>
+      <h2 style="margin:12px 0 24px">Surfaces we wash.</h2>
+      <div class="chips"><% pressureSurfaces.forEach(s => { %><span class="chip"><%- icon('spray') %><%= s %></span><% }) %></div>
+    </div>
+    <div class="card reveal">
+      <h3 style="margin-bottom:6px">Starting prices</h3>
+      <% outdoorAddons.filter(a => ['driveway','walkways','patio','deck','bins','furniture'].includes(a.key)).forEach(a => { %>
+        <div class="addon"><span class="n"><%= a.name %></span><span class="v">$<%= a.from %>+</span></div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<section class="section alt">
+  <div class="container">
+    <div class="section-head center reveal"><div class="label rule">Save with a package</div><h2>Bundle it with lawn care.</h2></div>
+    <div class="grid g2">
+      <% lawnPackages.filter(p => p.key === 'curb' || p.key === 'refresh').forEach(p => { %>
+      <div class="card pkg reveal <%= p.featured ? 'featured' : '' %>">
+        <div class="top"><span class="name"><%= p.name %></span><span class="price">$<%= p.from %>+</span></div>
+        <p class="tag"><%= p.tagline %></p>
+        <ul><% p.includes.forEach(i => { %><li><%- icon('check') %><%= i %></li><% }) %></ul>
+      </div>
+      <% }) %>
+    </div>
+    <p class="muted center" style="font-size:14px;margin-top:24px"><%= policy.general %></p>
+  </div>
+</section>
+<%- include('../partials/cta') %>
+<%- include('../partials/site-foot') %>

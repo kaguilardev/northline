@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' && title ? title + ' · ' : '' %>Northline Home & Outdoor</title>
+  <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Painting, landscaping, pressure washing, remodeling, decks & fences in Durham, Raleigh, Cary and Chapel Hill. Professional quality at a fair price.' %>">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="container">
+    <span class="areas"><%- icon('pin') %> <%= areas.slice(0,4).join(' • ') %> &amp; surrounding areas</span>
+    <span class="row" style="display:flex;gap:18px">
+      <% if (contact.phone) { %><a href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%- icon('phone') %> <%= contact.phone %></a><% } %>
+      <% if (contact.email) { %><a href="mailto:<%= contact.email %>"><%- icon('mail') %> <%= contact.email %></a><% } %>
+      <% if (!contact.phone && !contact.email) { %><span>Clean • Reliable • Professional</span><% } %>
+    </span>
+  </div>
+</div>
+<header class="site-header">
+  <div class="container">
+    <a class="logo" href="/" aria-label="Northline Home & Outdoor — home"><img src="/img/logo.png" alt="Northline Home & Outdoor" width="110" height="59"></a>
+    <% const nav = [['/services','Services'],['/lawn-care','Lawn Care'],['/painting','Painting'],['/pressure-washing','Pressure Washing'],['/gallery','Gallery'],['/about','About'],['/service-area','Service Area']]; %>
+    <nav class="mainnav" aria-label="Main">
+      <% nav.forEach(([href,label]) => { %><a href="<%= href %>" class="<%= path === href ? 'on' : '' %>"><%= label %></a><% }) %>
+      <a class="btn btn-gold" href="/estimate">Free Estimate</a>
+    </nav>
+    <details class="mobile-nav">
+      <summary aria-label="Open menu"><%- icon('menu') %></summary>
+      <div class="panel">
+        <% nav.forEach(([href,label]) => { %><a href="<%= href %>"><%= label %></a><% }) %>
+        <a class="btn btn-gold" href="/estimate">Get a Free Estimate</a>
+      </div>
+    </details>
+  </div>
+</header>
+<main>

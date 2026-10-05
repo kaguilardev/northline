@@ -1,0 +1,50 @@
+<%- include('../partials/head') %>
+<div class="pagehead">
+  <div><a href="/admin/quotes" class="muted small">← All quotes</a><h1 style="margin-top:6px"><%= quote.number %> <span class="pill <%= quote.status %>" style="vertical-align:middle"><%= quote.status %></span></h1></div>
+  <div class="row">
+    <a class="btn ghost" href="/admin/quotes/<%= quote.id %>/edit">Edit</a>
+    <% if (job) { %><a class="btn ghost" href="/admin/jobs/<%= job.id %>">View job</a><% } else { %><a class="btn" href="/admin/jobs/new?quote=<%= quote.id %>">Create job</a><% } %>
+  </div>
+</div>
+<% if (flash) { %><p class="success"><%= flash %></p><% } %>
+<div class="grid2 wide-left" style="align-items:start">
+  <section class="card">
+    <dl class="facts">
+      <dt>Customer</dt><dd><strong><%= quote.client_name || '—' %></strong><br><span class="muted small"><%= [quote.client_email, quote.client_phone].filter(Boolean).join(' · ') %></span></dd>
+      <dt>Project</dt><dd><%= quote.title || '—' %></dd>
+      <dt>Valid until</dt><dd><%= quote.valid_until ? fmtDate(quote.valid_until) : '—' %></dd>
+    </dl>
+    <table style="margin-top:18px">
+      <thead><tr><th>Item</th><th style="text-align:right">Amount</th></tr></thead>
+      <tbody>
+        <% quote.items.forEach(i => { %><tr><td><strong><%= i.label %></strong><% if (i.detail) { %><div class="muted small"><%= i.detail %></div><% } %></td><td class="money" style="text-align:right"><%= money(i.amount) %></td></tr><% }) %>
+      </tbody>
+    </table>
+    <div class="total-row"><span>Total</span><%= money(quote.total) %></div>
+    <% if (quote.notes) { %><p style="white-space:pre-line"><%= quote.notes %></p><% } %>
+    <% if (quote.paint_note) { %><p class="muted small">Includes “paint not included” note.</p><% } %>
+  </section>
+  <div>
+    <section class="card">
+      <h2>Send to customer</h2>
+      <p class="muted small" style="margin-top:0">The customer sees a branded estimate page where they can accept or decline.</p>
+      <div class="copy"><input id="qlink" value="<%= link %>" readonly><button type="button" class="btn ghost small" onclick="navigator.clipboard.writeText(document.getElementById('qlink').value);this.textContent='Copied'">Copy</button></div>
+      <div class="row" style="margin-top:12px">
+        <form method="post" action="/admin/quotes/<%= quote.id %>/send"><input type="hidden" name="via" value="email"><button class="btn gold" <%= quote.client_email ? '' : 'disabled title="Client has no email"' %>>Email estimate</button></form>
+        <form method="post" action="/admin/quotes/<%= quote.id %>/send"><input type="hidden" name="via" value="link"><button class="btn ghost">Mark sent (I’ll text it)</button></form>
+      </div>
+      <% if (!emailEnabled) { %><p class="muted small">Email sending turns on once RESEND_API_KEY is set.</p><% } %>
+      <% if (quote.status !== 'draft') { %><p class="small" style="margin-bottom:0"><a href="<%= link %>" target="_blank">Preview what the customer sees ↗</a></p><% } else { %><p class="muted small" style="margin-bottom:0">The link works once the quote is marked sent.</p><% } %>
+    </section>
+    <section class="card" style="margin-top:18px">
+      <h2>Status</h2>
+      <form method="post" action="/admin/quotes/<%= quote.id %>/status" class="row">
+        <select name="status" style="flex:1;margin:0"><% ['draft','sent','accepted','declined'].forEach(s => { %><option value="<%= s %>" <%= quote.status === s ? 'selected' : '' %>><%= s %></option><% }) %></select>
+        <button class="btn">Update</button>
+      </form>
+      <% if (quote.responded_at) { %><p class="muted small">Customer responded <%= new Date(quote.responded_at).toLocaleString('en-US') %></p><% } %>
+    </section>
+    <form method="post" action="/admin/quotes/<%= quote.id %>/delete" onsubmit="return confirm('Delete this quote?')" style="margin-top:14px"><button class="link danger small">Delete quote</button></form>
+  </div>
+</div>
+<%- include('../partials/foot') %>

@@ -1,0 +1,49 @@
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <div class="cols">
+      <div>
+        <img class="flogo" src="/img/logo-light.png" alt="Northline Home & Outdoor" loading="lazy">
+        <p style="margin:18px 0 0;max-width:300px">Residential painting, landscaping, pressure washing, remodeling, decks &amp; fences. Professional quality at a fair price.</p>
+        <div class="motto">Clean • Reliable • Professional</div>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <ul><% services.forEach(s => { %><li><a href="<%= s.href %>"><%= s.short %></a></li><% }) %></ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about">About Northline</a></li>
+          <li><a href="/gallery">Project Gallery</a></li>
+          <li><a href="/service-area">Service Area</a></li>
+          <li><a href="/estimate">Request an Estimate</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Service Area</h4>
+        <ul><% areas.forEach(a => { %><li><%= a %></li><% }) %></ul>
+        <% if (contact.phone) { %><p style="margin-top:16px"><a href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%= contact.phone %></a></p><% } %>
+        <% if (contact.email) { %><p style="margin:4px 0 0"><a href="mailto:<%= contact.email %>"><%= contact.email %></a></p><% } %>
+      </div>
+    </div>
+    <div class="legal">
+      <span>© <%= new Date().getFullYear() %> Northline Home &amp; Outdoor · North Carolina</span>
+      <a href="/login">Team sign in</a>
+    </div>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</footer>
+<script>
+  // Fade sections in as you scroll
+  (function () {
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { threshold: 0.12 });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+</script>
+</body>
+</html>

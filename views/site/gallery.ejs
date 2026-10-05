@@ -1,0 +1,39 @@
+<%- include('../partials/site-head', { title: 'Project Gallery' }) %>
+<section class="page-hero">
+  <div class="container">
+    <div class="label">Project gallery</div>
+    <h1>Before &amp; after.</h1>
+    <p class="lede">Real Northline projects from around the Triangle.</p>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>
+<section class="section">
+  <div class="container">
+    <% if (!projects.length) { %>
+      <div class="empty reveal">
+        <span class="medal"><%- icon('camera') %></span>
+        <h3>Our gallery is growing.</h3>
+        <p class="muted" style="max-width:460px;margin:10px auto 22px">We’re adding before-and-after photos from recent projects. Want yours to be next?</p>
+        <a class="btn btn-gold" href="/estimate">Get a Free Estimate</a>
+      </div>
+    <% } else { %>
+    <div class="grid g3">
+      <% projects.forEach(p => { %>
+      <article class="card ba reveal">
+        <div class="pair">
+          <figure><% if (p.before) { %><img src="/photo/<%= p.before %>" alt="Before" loading="lazy"><% } %><figcaption>Before</figcaption></figure>
+          <figure><% if (p.after) { %><img src="/photo/<%= p.after %>" alt="After" loading="lazy"><% } %><figcaption>After</figcaption></figure>
+        </div>
+        <div class="info">
+          <h3><%= p.package || p.service || 'Northline project' %></h3>
+          <% if (p.city) { %><p class="muted" style="margin:4px 0 0;font-size:14px"><%= p.city %></p><% } %>
+          <% if (p.customer_review) { %><p style="margin:12px 0 0;font-style:italic;font-size:15px">“<%= p.customer_review %>”</p><% } %>
+        </div>
+      </article>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/cta') %>
+<%- include('../partials/site-foot') %>

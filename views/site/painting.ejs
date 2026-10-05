@@ -1,0 +1,38 @@
+<%- include('../partials/site-head', { title: 'House Painting', description: 'Interior and exterior house painting in Durham, Raleigh, Cary and Chapel Hill. Rooms from $400, trim, doors, cabinets and staining.' }) %>
+<section class="page-hero">
+  <div class="container">
+    <div class="label">House painting services</div>
+    <h1>A clean, professional finish.</h1>
+    <p class="lede">Interior and exterior painting with real prep work — patching, sanding and caulking — and two full coats.</p>
+    <div class="chips"><% ['Interior','Exterior','Trim','Doors','Cabinets'].forEach(c => { %><span class="chip"><%- icon('brush') %><%= c %></span><% }) %></div>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="grid g4">
+      <% paintPackages.forEach(p => { %>
+      <div class="card paint reveal">
+        <div class="head"><span class="medal"><%- icon(p.icon) %></span><h3><%= p.name %></h3><div class="sub"><%= p.tagline %></div></div>
+        <div class="bar"><%= p.price %></div>
+        <ul><% p.includes.forEach(i => { %><li><%- icon('check') %><%= i %></li><% }) %></ul>
+      </div>
+      <% }) %>
+    </div>
+    <div class="note reveal" style="margin-top:28px"><%- icon('clipboard') %><div><strong>Paint not included in listed prices.</strong> Materials are billed separately unless otherwise specified in the estimate.</div></div>
+  </div>
+</section>
+<section class="section alt">
+  <div class="container">
+    <div class="section-head reveal" style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap">
+      <div><div class="label">Additional painting services</div><h2>Smaller jobs, done right.</h2></div>
+      <span class="muted" style="font-size:14px">Starting prices · labor</span>
+    </div>
+    <div class="addons reveal">
+      <% paintAddons.forEach(a => { %><div class="addon"><span class="n"><%= a.name %><small><%= a.desc %></small></span><span class="v">$<%= a.from.toLocaleString('en-US') %>+<%= a.unit ? ' ' + a.unit : '' %></span></div><% }) %>
+    </div>
+    <p class="muted" style="font-size:14px;margin-top:28px"><%= policy.general %></p>
+  </div>
+</section>
+<%- include('../partials/cta', { ctaTitle: 'Ready for a fresh coat?' }) %>
+<%- include('../partials/site-foot') %>

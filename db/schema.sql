@@ -51,3 +51,79 @@ CREATE TABLE IF NOT EXISTS nl_session (
   expire TIMESTAMP(6) NOT NULL
 );
 CREATE INDEX IF NOT EXISTS nl_session_expire_idx ON nl_session (expire);
+
+-- ── Estimate requests from the public website ──
+CREATE TABLE IF NOT EXISTS nl_requests (
+  id              SERIAL PRIMARY KEY,
+  name            TEXT NOT NULL,
+  phone           TEXT,
+  email           TEXT,
+  address         TEXT,
+  service         TEXT,
+  preferred_date  DATE,
+  description     TEXT,
+  status          TEXT NOT NULL DEFAULT 'new'
+                  CHECK (status IN ('new','contacted','quoted','won','lost')),
+  client_id       INTEGER REFERENCES nl_clients(id) ON DELETE SET NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ── Quotes / estimates ──
+CREATE TABLE IF NOT EXISTS nl_quotes (
+  id           SERIAL PRIMARY KEY,
+  number       TEXT UNIQUE,
+  token        TEXT UNIQUE NOT NULL,
+  client_id    INTEGER REFERENCES nl_clients(id) ON DELETE SET NULL,
+  request_id   INTEGER REFERENCES nl_requests(id) ON DELETE SET NULL,
+  title        TEXT,
+  items        JSONB NOT NULL DEFAULT '[]',
+  total        NUMERIC(10,2) NOT NULL DEFAULT 0,
+  notes        TEXT,
+  paint_note   BOOLEAN NOT NULL DEFAULT false,
+  status       TEXT NOT NULL DEFAULT 'draft'
+               CHECK (status IN ('draft','sent','accepted','declined')),
+  valid_until  DATE,
+  sent_at      TIMESTAMPTZ,
+  responded_at TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ── Jobs (work actually scheduled / done) ──
+CREATE TABLE IF NOT EXISTS nl_jobs (
+  id               SERIAL PRIMARY KEY,
+  client_id        INTEGER REFERENCES nl_clients(id) ON DELETE SET NULL,
+  quote_id         INTEGER REFERENCES nl_quotes(id) ON DELETE SET NULL,
+  service          TEXT,
+  package          TEXT,
+  quoted_price     NUMERIC(10,2),
+  materials_cost   NUMERIC(10,2),
+  labor_hours      NUMERIC(6,2),
+  employees        TEXT,
+  job_date         DATE,
+  status           TEXT NOT NULL DEFAULT 'scheduled'
+                   CHECK (status IN ('scheduled','in_progress','completed','cancelled')),
+  payment_status   TEXT NOT NULL DEFAULT 'unpaid'
+                   CHECK (payment_status IN ('unpaid','deposit','paid')),
+  actual_cost      NUMERIC(10,2),
+  review_rating    INTEGER CHECK (review_rating BETWEEN 1 AND 5),
+  customer_review  TEXT,
+  show_in_gallery  BOOLEAN NOT NULL DEFAULT false,
+  notes            TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ── Photos (stored in the database so they survive redeploys) ──
+CREATE TABLE IF NOT EXISTS nl_photos (
+  id          SERIAL PRIMARY KEY,
+  owner_type  TEXT NOT NULL CHECK (owner_type IN ('request','job')),
+  owner_id    INTEGER NOT NULL,
+  kind        TEXT NOT NULL DEFAULT 'upload' CHECK (kind IN ('upload','before','after')),
+  filename    TEXT,
+  mime        TEXT NOT NULL,
+  bytes       INTEGER,
+  data        BYTEA NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS nl_photos_owner_idx ON nl_photos (owner_type, owner_id);

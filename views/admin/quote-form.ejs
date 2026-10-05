@@ -1,0 +1,82 @@
+<%- include('../partials/head') %>
+<% const isEdit = !!quote.id; const json = (v) => JSON.stringify(v).replace(/</g, '\\u003c'); %>
+<div class="pagehead">
+  <div><a href="<%= isEdit ? '/admin/quotes/' + quote.id : '/admin/quotes' %>" class="muted small">← Back</a><h1 style="margin-top:6px"><%= isEdit ? 'Edit ' + quote.number : 'New quote' %></h1></div>
+</div>
+<% if (fromRequest) { %>
+  <p class="notice">Quoting request from <strong><%= fromRequest.name %></strong> — <%= fromRequest.service %>. <a href="/admin/requests/<%= fromRequest.id %>" target="_blank">View photos ↗</a>
+  <% if (fromRequest.description) { %><br><span class="small"><%= fromRequest.description %></span><% } %></p>
+<% } %>
+<form method="post" action="/admin/quotes<%= isEdit ? '/' + quote.id : '' %>" id="qform" class="grid2 wide-left" style="align-items:start">
+  <div>
+    <section class="card form">
+      <input type="hidden" name="request_id" value="<%= quote.request_id || '' %>">
+      <div class="cols">
+        <label class="span2">Customer
+          <select name="client_id" id="clientSel">
+            <option value="">+ New customer…</option>
+            <% clients.forEach(c => { %><option value="<%= c.id %>" <%= String(quote.client_id) === String(c.id) ? 'selected' : '' %>><%= c.name %><%= c.email ? ' — ' + c.email : '' %></option><% }) %>
+          </select>
+        </label>
+      </div>
+      <fieldset id="newClient">
+        <legend>New customer</legend>
+        <div class="cols">
+          <label>Name <input name="new_name" value="<%= fromRequest ? fromRequest.name : '' %>"></label>
+          <label>Email <input type="email" name="new_email" value="<%= fromRequest ? fromRequest.email || '' : '' %>"></label>
+          <label>Phone <input name="new_phone" value="<%= fromRequest ? fromRequest.phone || '' : '' %>"></label>
+          <label>Address <input name="new_address" value="<%= fromRequest ? fromRequest.address || '' : '' %>"></label>
+        </div>
+      </fieldset>
+      <div class="cols">
+        <label>Project title <input name="title" value="<%= quote.title || '' %>" placeholder="e.g. Curb Appeal — front yard"></label>
+        <label>Valid until <input type="date" name="valid_until" value="<%= quote.valid_until || '' %>"></label>
+      </div>
+    </section>
+
+    <section class="card flush" style="margin-top:18px">
+      <table class="items">
+        <thead><tr><th>Item</th><th>Details</th><th style="text-align:right">Amount</th><th></th></tr></thead>
+        <tbody id="itemRows"></tbody>
+      </table>
+      <div style="padding:12px 16px"><button type="button" class="btn ghost small" id="addBlank">+ Custom line</button></div>
+      <div class="total-row"><span>Total</span><strong id="total">$0</strong></div>
+    </section>
+
+    <section class="card form" style="margin-top:18px">
+      <label>Notes for the customer <textarea name="notes" rows="4" placeholder="Schedule, what's included, payment terms…"><%= quote.notes || '' %></textarea></label>
+      <label class="check"><input type="checkbox" name="paint_note" id="paintNote" <%= quote.paint_note ? 'checked' : '' %>> Show “Paint not included — materials billed separately”</label>
+      <input type="hidden" name="items" id="itemsField">
+      <div class="row"><button class="btn gold">Save quote</button><a class="btn ghost" href="/admin/quotes">Cancel</a></div>
+    </section>
+  </div>
+
+  <aside class="card book sticky" id="book">
+    <h2 style="margin-bottom:6px">Price book</h2>
+    <p class="muted small" style="margin-top:0">Click to add. You can edit any amount after.</p>
+
+    <h3>Lawn package</h3>
+    <div class="row2">
+      <select id="lawnPkg"></select>
+      <select id="lawnSize"></select>
+    </div>
+    <div class="opt"><span id="lawnRange" class="muted">—</span><span class="row"><button type="button" class="btn small ghost" data-lawn="lo">Add low</button><button type="button" class="btn small" data-lawn="hi">Add high</button></span></div>
+
+    <h3>Lawn conditions</h3>
+    <div id="adjList"></div>
+
+    <h3>Outdoor add-ons</h3>
+    <div id="addonList"></div>
+
+    <h3>Painting packages</h3>
+    <div id="paintList"></div>
+
+    <h3>Painting add-ons</h3>
+    <div id="paintAddonList"></div>
+  </aside>
+</form>
+
+<script type="application/json" id="pricebook"><%- json(book) %></script>
+<script type="application/json" id="initialItems"><%- json(quote.items || []) %></script>
+<script src="/js/quote-builder.js"></script>
+<%- include('../partials/foot') %>

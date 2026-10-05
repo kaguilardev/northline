@@ -1,31 +1,45 @@
 <%- include('partials/head', { title: 'Dashboard' }) %>
-<h1>Good to see you<%= admin.name ? ', ' + admin.name : '' %>.</h1>
+<div class="pagehead">
+  <h1>Good to see you<%= admin.name ? ', ' + admin.name : '' %>.</h1>
+  <div class="row"><a class="btn gold" href="/admin/quotes/new">+ New quote</a><a class="btn ghost" href="/admin/jobs/new">+ New job</a></div>
+</div>
+<div class="kpis">
+  <a class="kpi <%= k.new_requests ? 'hl' : '' %>" href="/admin/requests?status=new"><div class="k">New requests</div><div class="v"><%= k.new_requests %></div><div class="s">waiting for a reply</div></a>
+  <a class="kpi" href="/admin/quotes"><div class="k">Open quotes</div><div class="v"><%= money(k.open_value) %></div><div class="s"><%= k.open_quotes %> awaiting approval</div></a>
+  <a class="kpi" href="/admin/jobs"><div class="k">Revenue this month</div><div class="v"><%= money(k.month_revenue) %></div><div class="s">completed jobs</div></a>
+  <a class="kpi" href="/admin/jobs"><div class="k">Gross profit this month</div><div class="v"><%= money(k.month_profit) %></div><div class="s">jobs with costs entered</div></a>
+  <a class="kpi" href="/admin/jobs"><div class="k">Unpaid</div><div class="v"><%= money(k.unpaid) %></div><div class="s">completed, not paid</div></a>
+</div>
+<div class="grid2">
+  <section class="card">
+    <h2>New estimate requests</h2>
+    <% if (!requests.length) { %><p class="muted">You’re all caught up.</p><% } %>
+    <ul class="list">
+      <% requests.forEach(r => { %><li><a href="/admin/requests/<%= r.id %>"><strong><%= r.name %></strong></a><span class="muted"><%= r.service %></span><span class="date"><%= fmtDate(r.created_at) %></span></li><% }) %>
+    </ul>
+  </section>
+  <section class="card">
+    <h2>Upcoming jobs</h2>
+    <% if (!upcoming.length) { %><p class="muted">Nothing scheduled.</p><% } %>
+    <ul class="list">
+      <% upcoming.forEach(j => { %><li><a href="/admin/jobs/<%= j.id %>"><strong><%= j.name || 'Job #' + j.id %></strong></a><span class="muted"><%= [j.service, j.package, j.employees].filter(Boolean).join(' · ') %></span><span class="date"><%= j.job_date ? new Date(j.job_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : 'TBD' %></span></li><% }) %>
+    </ul>
+  </section>
+</div>
+<section class="card flush" style="margin-top:18px">
+  <div style="padding:18px 20px 0"><h2>Which services make the most money</h2><p class="muted small" style="margin-top:0">Completed jobs, all time. Enter actual costs on jobs to see profit.</p></div>
+  <table>
+    <thead><tr><th>Service</th><th style="text-align:right">Jobs</th><th style="text-align:right">Revenue</th><th style="text-align:right">Gross profit</th><th style="text-align:right">Profit / hour</th></tr></thead>
+    <tbody>
+      <% if (!byService.length) { %><tr><td colspan="5" class="muted center">No completed jobs yet.</td></tr><% } %>
+      <% byService.forEach(s => { %><tr><td><strong><%= s.service %></strong></td><td style="text-align:right"><%= s.jobs %></td><td class="money" style="text-align:right"><%= money(s.revenue) %></td><td class="money" style="text-align:right"><%= money(s.profit) %></td><td class="money" style="text-align:right"><%= Number(s.hours) > 0 ? money(Math.round(s.profit / s.hours)) : '—' %></td></tr><% }) %>
+    </tbody>
+  </table>
+</section>
+<h2 style="margin-top:28px">Client pipeline</h2>
 <div class="stats">
   <% Object.entries(byStatus).forEach(([s, n]) => { %>
     <a class="stat" href="/admin/clients?status=<%= s %>"><span class="n"><%= n %></span><span class="pill <%= s %>"><%= s.replace('_',' ') %></span></a>
   <% }) %>
-</div>
-<div class="grid2">
-  <section class="card">
-    <h2>Upcoming visits</h2>
-    <% if (!upcoming.length) { %><p class="muted">Nothing scheduled. Set a next visit date on a client.</p><% } %>
-    <ul class="list">
-      <% upcoming.forEach(c => { %>
-        <li><a href="/admin/clients/<%= c.id %>"><strong><%= c.name %></strong></a>
-          <span class="muted"><%= c.service || '' %></span>
-          <span class="date"><%= new Date(c.next_visit).toLocaleDateString('en-US',{month:'short',day:'numeric', timeZone:'UTC'}) %></span></li>
-      <% }) %>
-    </ul>
-  </section>
-  <section class="card">
-    <h2>Recent emails</h2>
-    <% if (!recentEmails.length) { %><p class="muted">No emails sent yet.</p><% } %>
-    <ul class="list">
-      <% recentEmails.forEach(e => { %>
-        <li><strong><%= e.subject %></strong><span class="muted"><%= e.recipients %> sent · <%= e.status %></span>
-          <span class="date"><%= new Date(e.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) %></span></li>
-      <% }) %>
-    </ul>
-  </section>
 </div>
 <%- include('partials/foot') %>

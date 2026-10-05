@@ -1,0 +1,21 @@
+<%- include('../partials/head') %>
+<div class="pagehead"><h1>Quotes</h1><a class="btn gold" href="/admin/quotes/new">+ New quote</a></div>
+<div class="card flush">
+  <table>
+    <thead><tr><th>Number</th><th>Client</th><th>Project</th><th>Total</th><th>Status</th><th>Created</th></tr></thead>
+    <tbody>
+    <% if (!quotes.length) { %><tr><td colspan="6" class="muted center">No quotes yet. Start one from a request or click “New quote”.</td></tr><% } %>
+    <% quotes.forEach(q => { %>
+      <tr onclick="location='/admin/quotes/<%= q.id %>'">
+        <td><strong><%= q.number %></strong></td>
+        <td><%= q.client_name || '—' %></td>
+        <td><%= q.title || '—' %></td>
+        <td class="money"><%= money(q.total) %></td>
+        <td><span class="pill <%= q.status %>"><%= q.status %></span></td>
+        <td class="small"><%= fmtDate(q.created_at) %></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/foot') %>

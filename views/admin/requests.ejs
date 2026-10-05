@@ -1,0 +1,27 @@
+<%- include('../partials/head') %>
+<div class="pagehead"><h1>Estimate requests</h1><a class="btn ghost" href="/estimate" target="_blank">Open public form ↗</a></div>
+<form class="filters" method="get">
+  <select name="status" onchange="this.form.submit()">
+    <option value="">All requests</option>
+    <% statuses.forEach(s => { %><option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s %></option><% }) %>
+  </select>
+</form>
+<div class="card flush">
+  <table>
+    <thead><tr><th>Received</th><th>Name</th><th>Service</th><th>Address</th><th>Photos</th><th>Status</th></tr></thead>
+    <tbody>
+    <% if (!requests.length) { %><tr><td colspan="6" class="muted center">No requests yet. They’ll appear here when customers use the estimate form.</td></tr><% } %>
+    <% requests.forEach(r => { %>
+      <tr onclick="location='/admin/requests/<%= r.id %>'">
+        <td class="small"><%= fmtDate(r.created_at) %></td>
+        <td><strong><%= r.name %></strong><div class="muted small"><%= r.phone %></div></td>
+        <td><%= r.service %></td>
+        <td class="small"><%= r.address %></td>
+        <td><%= r.photo_count || '—' %></td>
+        <td><span class="pill <%= r.status %>"><%= r.status %></span></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/foot') %>

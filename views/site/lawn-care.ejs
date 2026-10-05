@@ -1,0 +1,65 @@
+<%- include('../partials/site-head', { title: 'Lawn Care & Landscaping', description: 'Lawn care packages from $49 in Durham, Raleigh, Cary and Chapel Hill. Mowing, trimming, edging, cleanups and pressure washing.' }) %>
+<section class="page-hero">
+  <div class="container">
+    <div class="label">Lawn care &amp; landscaping</div>
+    <h1>A sharp yard, every visit.</h1>
+    <p class="lede">Every visit includes mowing, trimming around trees and fences, clean edges, and blowing off your driveway and walkways. Pick the package that fits your yard.</p>
+    <div class="chips"><span class="chip"><%- icon('leaf') %>Mowing</span><span class="chip"><%- icon('leaf') %>Trimming</span><span class="chip"><%- icon('leaf') %>Edging</span><span class="chip"><%- icon('leaf') %>Blowing</span></div>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>
+
+<section class="section" id="packages">
+  <div class="container">
+    <div class="section-head center reveal"><div class="label rule">Packages</div><h2>Choose your package.</h2></div>
+    <div class="grid g4">
+      <% lawnPackages.forEach(p => { %>
+      <div class="card pkg reveal <%= p.featured ? 'featured' : '' %>">
+        <% if (p.featured) { %><span class="ribbon">Most complete</span><% } %>
+        <div class="top"><span class="name"><%= p.name %></span><span class="price">$<%= p.from %>+</span></div>
+        <p class="tag"><%= p.tagline %></p>
+        <ul><% p.includes.forEach(i => { %><li><%- icon('check') %><%= i %></li><% }) %></ul>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container">
+    <div class="section-head reveal" style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap">
+      <div><div class="label">Pricing by lawn size</div><h2>Know your price up front.</h2></div>
+      <span class="muted" style="font-size:14px">Based on mowable lawn area, not total lot size.</span>
+    </div>
+    <div class="table-wrap reveal">
+      <table class="price">
+        <thead><tr><th>Package</th><% lawnSizes.forEach(s => { %><th><%= s.label %><small><%= s.range %></small></th><% }) %></tr></thead>
+        <tbody>
+          <% lawnPackages.forEach(p => { %>
+          <tr><td><%= p.name %></td><% lawnSizes.forEach(s => { %><td><%= range(p.prices[s.key]) %></td><% }) %></tr>
+          <% }) %>
+          <tr class="custom"><td>20,000+ ft²</td><td colspan="4">Custom quote — send us a few photos</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal"><div class="label">Add-ons &amp; one-time services</div><h2>Additional services.</h2><p class="lede">Book these on their own, or add them to any visit.</p></div>
+    <div class="addons reveal">
+      <% outdoorAddons.forEach(a => { %><div class="addon"><span class="n"><%= a.name %></span><span class="v">$<%= a.from %>+</span></div><% }) %>
+    </div>
+    <div class="grid g2" style="margin-top:48px;align-items:start">
+      <div class="reveal">
+        <h3>What can affect your price</h3>
+        <p class="muted">Our published prices are starting prices for regular maintenance. A visit may cost more if the yard has:</p>
+        <div class="chips"><% lawnAdjustments.forEach(a => { %><span class="chip"><%= a.name %></span><% }) %><span class="chip">Overgrown / neglected yard</span></div>
+      </div>
+      <div class="note reveal"><%- icon('clipboard') %><div><strong>Starting prices.</strong> <%= policy.general %> <%= policy.lawn %></div></div>
+    </div>
+  </div>
+</section>
+<%- include('../partials/cta', { ctaTitle: 'Get your lawn on a schedule.' }) %>
+<%- include('../partials/site-foot') %>

@@ -6,6 +6,8 @@ const PgSession = require('connect-pg-simple')(session);
 const helmet = require('helmet');
 const db = require('./db');
 const { bootstrapAdmin } = require('./lib/auth');
+const pricing = require('./lib/pricing');
+const icon = require('./lib/icons');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,16 +33,43 @@ app.use(session({
   cookie: { httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: 1000 * 60 * 60 * 12 },
 }));
 
+const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '');
+
+// Values every page can use
+app.locals.icon = icon;
+app.locals.money = pricing.money;
+app.locals.range = pricing.range;
+app.locals.fmtDate = fmtDate;
+app.locals.services = pricing.SERVICES;
+app.locals.areas = pricing.SERVICE_AREAS;
+app.locals.policy = pricing.POLICY;
+app.locals.lawnSizes = pricing.LAWN_SIZES;
+app.locals.lawnPackages = pricing.LAWN_PACKAGES;
+app.locals.outdoorAddons = pricing.OUTDOOR_ADDONS;
+app.locals.lawnAdjustments = pricing.LAWN_ADJUSTMENTS;
+app.locals.paintPackages = pricing.PAINT_PACKAGES;
+app.locals.paintAddons = pricing.PAINT_ADDONS;
+app.locals.pressureSurfaces = pricing.PRESSURE_SURFACES;
+app.locals.contact = { phone: process.env.BUSINESS_PHONE || '', email: process.env.BUSINESS_EMAIL || '' };
+
 app.use((req, res, next) => {
   res.locals.admin = req.session.admin || null;
   res.locals.path = req.path;
-  res.locals.business = process.env.BUSINESS_NAME || 'Northline Landscaping';
+  res.locals.business = process.env.BUSINESS_NAME || 'Northline Home & Outdoor';
   next();
 });
 
-app.get('/', (req, res) => res.render('home'));
+// Badge with the number of new estimate requests in the admin menu
+app.use('/admin', async (req, res, next) => {
+  if (!req.session.admin) return next();
+  try { res.locals.newRequests = (await db.query(`SELECT count(*)::int AS n FROM nl_requests WHERE status='new'`)).rows[0].n; } catch { /* ignore */ }
+  next();
+});
+
 app.get('/healthz', (req, res) => res.send('ok'));
+app.use(require('./routes/public'));
 app.use(require('./routes/admin'));
+app.use(require('./routes/ops'));
 
 app.use((req, res) => res.status(404).render('error', { message: 'Page not found.' }));
 app.use((err, req, res, next) => {

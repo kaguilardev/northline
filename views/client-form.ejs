@@ -23,6 +23,20 @@
     <button class="btn">Save client</button>
   </div>
 </form>
+<% if (client.id && typeof quotes !== 'undefined') { %>
+<div class="grid2" style="margin-top:18px">
+  <section class="card">
+    <div class="pagehead" style="margin-bottom:8px"><h2 style="margin:0">Quotes</h2><a class="btn small gold" href="/admin/quotes/new?client=<%= client.id %>">+ Quote</a></div>
+    <% if (!quotes.length) { %><p class="muted">No quotes yet.</p><% } %>
+    <ul class="list"><% quotes.forEach(q => { %><li><a href="/admin/quotes/<%= q.id %>"><strong><%= q.number %></strong></a><span class="muted"><%= q.title || '' %> · <%= money(q.total) %></span><span class="date"><span class="pill <%= q.status %>"><%= q.status %></span></span></li><% }) %></ul>
+  </section>
+  <section class="card">
+    <div class="pagehead" style="margin-bottom:8px"><h2 style="margin:0">Jobs</h2><a class="btn small" href="/admin/jobs/new?client=<%= client.id %>">+ Job</a></div>
+    <% if (!jobs.length) { %><p class="muted">No jobs yet.</p><% } %>
+    <ul class="list"><% jobs.forEach(j => { %><li><a href="/admin/jobs/<%= j.id %>"><strong><%= j.package || j.service || 'Job #' + j.id %></strong></a><span class="muted"><%= j.job_date ? fmtDate(j.job_date) : 'No date' %> · <%= j.quoted_price != null ? money(j.quoted_price) : '' %></span><span class="date"><span class="pill <%= j.status %>"><%= j.status.replace('_',' ') %></span></span></li><% }) %></ul>
+  </section>
+</div>
+<% } %>
 <% if (client.id) { %>
 <form method="post" action="/admin/clients/<%= client.id %>/delete" onsubmit="return confirm('Delete this client?')">
   <button class="link danger">Delete client</button>

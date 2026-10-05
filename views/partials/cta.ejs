@@ -1,0 +1,12 @@
+<section class="cta-band">
+  <div class="container">
+    <div class="label" style="color:var(--gold)">Free, no-pressure estimates</div>
+    <h2 style="margin-top:12px"><%= typeof ctaTitle !== 'undefined' ? ctaTitle : 'Let’s take care of your home.' %></h2>
+    <p>Tell us what you need and send a few photos. We’ll get back to you with a clear, professional estimate — usually without needing to drive out first.</p>
+    <div class="row">
+      <a class="btn btn-gold btn-lg" href="/estimate">Get a Free Estimate <%- icon('arrow') %></a>
+      <% if (contact.phone) { %><a class="btn btn-light btn-lg" href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%- icon('phone') %> <%= contact.phone %></a><% } %>
+    </div>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>

@@ -38,13 +38,25 @@ router.use('/admin', requireAdmin);
 router.get('/admin', async (req, res, next) => {
   try {
     const counts = await db.query(`SELECT status, count(*)::int AS n FROM nl_clients GROUP BY status`);
-    const upcoming = await db.query(
-      `SELECT id, name, service, next_visit, status FROM nl_clients
-       WHERE next_visit >= current_date ORDER BY next_visit LIMIT 8`);
-    const recentEmails = await db.query(`SELECT * FROM nl_email_log ORDER BY sent_at DESC LIMIT 5`);
     const byStatus = Object.fromEntries(STATUSES.map((s) => [s, 0]));
     counts.rows.forEach((r) => { byStatus[r.status] = r.n; });
-    res.render('dashboard', { byStatus, upcoming: upcoming.rows, recentEmails: recentEmails.rows });
+    const [kpi, upcoming, requests, byService] = await Promise.all([
+      db.query(`SELECT
+        (SELECT count(*)::int FROM nl_requests WHERE status='new') AS new_requests,
+        (SELECT count(*)::int FROM nl_quotes WHERE status='sent') AS open_quotes,
+        (SELECT COALESCE(sum(total),0) FROM nl_quotes WHERE status='sent') AS open_value,
+        (SELECT COALESCE(sum(quoted_price),0) FROM nl_jobs WHERE status='completed' AND date_trunc('month', job_date)=date_trunc('month', current_date)) AS month_revenue,
+        (SELECT COALESCE(sum(quoted_price - actual_cost),0) FROM nl_jobs WHERE status='completed' AND actual_cost IS NOT NULL AND date_trunc('month', job_date)=date_trunc('month', current_date)) AS month_profit,
+        (SELECT COALESCE(sum(quoted_price),0) FROM nl_jobs WHERE status='completed' AND payment_status<>'paid') AS unpaid`),
+      db.query(`SELECT j.id, j.job_date, j.service, j.package, j.employees, c.name FROM nl_jobs j LEFT JOIN nl_clients c ON c.id=j.client_id
+        WHERE j.status IN ('scheduled','in_progress') AND (j.job_date IS NULL OR j.job_date >= current_date - 1) ORDER BY j.job_date NULLS LAST LIMIT 8`),
+      db.query(`SELECT id, name, service, created_at FROM nl_requests WHERE status='new' ORDER BY created_at DESC LIMIT 6`),
+      db.query(`SELECT COALESCE(service,'Other') AS service, count(*)::int AS jobs, COALESCE(sum(quoted_price),0) AS revenue,
+        COALESCE(sum(quoted_price - actual_cost) FILTER (WHERE actual_cost IS NOT NULL),0) AS profit,
+        COALESCE(sum(labor_hours),0) AS hours
+        FROM nl_jobs WHERE status='completed' GROUP BY 1 ORDER BY profit DESC`),
+    ]);
+    res.render('dashboard', { byStatus, k: kpi.rows[0], upcoming: upcoming.rows, requests: requests.rows, byService: byService.rows });
   } catch (e) { next(e); }
 });
 
@@ -68,7 +80,9 @@ router.get('/admin/clients/:id', async (req, res, next) => {
   try {
     const { rows } = await db.query('SELECT * FROM nl_clients WHERE id = $1', [req.params.id]);
     if (!rows[0]) return res.status(404).render('error', { message: 'Client not found.' });
-    res.render('client-form', { client: rows[0], error: null });
+    const quotes = (await db.query('SELECT id, number, title, total, status FROM nl_quotes WHERE client_id=$1 ORDER BY id DESC', [rows[0].id])).rows;
+    const jobs = (await db.query('SELECT id, job_date, service, package, status, quoted_price FROM nl_jobs WHERE client_id=$1 ORDER BY job_date DESC NULLS FIRST', [rows[0].id])).rows;
+    res.render('client-form', { client: rows[0], error: null, quotes, jobs });
   } catch (e) { next(e); }
 });
 

@@ -1,0 +1,50 @@
+<%- include('../partials/site-head', { title: 'Estimate ' + quote.number }) %>
+<section class="section" style="padding-top:48px">
+  <div class="container narrow">
+    <% if (flash) { %><p class="note no-print" style="margin-bottom:20px"><%- icon('check') %><span><%= flash %></span></p><% } %>
+    <article class="doc">
+      <div class="doc-head">
+        <img src="/img/logo.png" alt="Northline Home & Outdoor">
+        <div class="meta">
+          <span class="label">Estimate</span>
+          <strong><%= quote.number %></strong>
+          Issued <%= fmtDate(quote.sent_at || quote.created_at) %><% if (quote.valid_until) { %> · Valid until <%= fmtDate(quote.valid_until) %><% } %>
+          <div style="margin-top:8px"><span class="status-pill <%= quote.status %>"><%= quote.status === 'sent' ? 'Awaiting approval' : quote.status %></span></div>
+        </div>
+      </div>
+      <div class="doc-body">
+        <div class="doc-to">
+          <div><div class="label" style="margin-bottom:6px">Prepared for</div>
+            <strong><%= quote.client_name || 'Customer' %></strong><br>
+            <% if (quote.client_address) { %><%= quote.client_address %><br><% } %>
+            <span class="muted"><%= [quote.client_email, quote.client_phone].filter(Boolean).join(' · ') %></span>
+          </div>
+          <div><div class="label" style="margin-bottom:6px">Project</div><strong><%= quote.title || 'Home & outdoor services' %></strong></div>
+        </div>
+        <table>
+          <thead><tr><th>Description</th><th>Amount</th></tr></thead>
+          <tbody>
+            <% quote.items.forEach(i => { %>
+              <tr><td><strong><%= i.label %></strong><% if (i.detail) { %><small><%= i.detail %></small><% } %></td><td><%= money(i.amount) %></td></tr>
+            <% }) %>
+            <tr class="total"><td>Total</td><td><%= money(quote.total) %></td></tr>
+          </tbody>
+        </table>
+        <% if (quote.notes) { %><p style="margin-top:22px;white-space:pre-line"><%= quote.notes %></p><% } %>
+        <div class="policy">
+          <span><%= policy.general %></span>
+          <% if (quote.paint_note) { %><span><strong>Paint not included.</strong> <%= policy.paint %></span><% } %>
+        </div>
+      </div>
+    </article>
+    <div class="no-print" style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap">
+      <% if (quote.status === 'sent') { %>
+        <form method="post" action="/q/<%= quote.token %>/accept"><button class="btn btn-gold btn-lg">Accept Estimate <%- icon('check') %></button></form>
+        <form method="post" action="/q/<%= quote.token %>/decline" onsubmit="return confirm('Decline this estimate?')"><button class="btn btn-ghost btn-lg">Decline</button></form>
+      <% } %>
+      <button class="btn btn-ghost btn-lg" onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <p class="center muted no-print" style="font-size:14px;margin-top:18px">Questions? <% if (contact.phone) { %>Call <a href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%= contact.phone %></a> or <% } %>reply to the email this estimate came in.</p>
+  </div>
+</section>
+<%- include('../partials/site-foot') %>
