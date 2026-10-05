@@ -1,0 +1,79 @@
+<%- include('../partials/site-head', { title: 'Commercial Services', description: 'Grounds maintenance, pressure washing and painting for offices, retail, HOAs and property managers in Durham, Raleigh, Cary and Chapel Hill.' }) %>
+<section class="page-hero">
+  <div class="container">
+    <div class="label">For businesses &amp; property managers</div>
+    <h1>Commercial property care, handled.</h1>
+    <p class="lede">Grounds, pressure washing and painting for offices, storefronts, HOAs and rental properties — on a schedule that works around your business.</p>
+    <div class="row" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:26px">
+      <a class="btn btn-gold btn-lg" href="#inquire">Request a Commercial Quote <%- icon('arrow') %></a>
+      <% if (contact.phone) { %><a class="btn btn-ghost btn-lg" href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%- icon('phone') %> <%= contact.phone %></a><% } %>
+    </div>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head center reveal"><div class="label rule">What we do for businesses</div><h2>One crew for the outside of your property.</h2></div>
+    <div class="grid g4">
+      <% commercialServices.forEach(s => { %>
+      <div class="card svc reveal" style="cursor:default">
+        <span class="medal"><%- icon(s.icon) %></span>
+        <h3><%= s.name %></h3>
+        <p><%= s.blurb %></p>
+      </div>
+      <% }) %>
+    </div>
+    <div class="chips reveal" style="justify-content:center;margin-top:32px">
+      <% propertyTypes.filter(p => p !== 'Other').forEach(p => { %><span class="chip"><%- icon('building') %><%= p %></span><% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container grid g3">
+    <div class="pillar reveal"><span class="medal"><%- icon('calendar') %></span><div><h3>Recurring service plans</h3><p>Weekly, every other week, monthly or seasonal — set it once and we keep it on the calendar.</p></div></div>
+    <div class="pillar reveal"><span class="medal"><%- icon('clock') %></span><div><h3>Around your hours</h3><p>Early mornings, after close or weekends so customers and tenants aren’t disrupted.</p></div></div>
+    <div class="pillar reveal"><span class="medal"><%- icon('clipboard') %></span><div><h3>Clear written proposals</h3><p>One point of contact and itemized pricing for every property you manage.</p></div></div>
+  </div>
+</section>
+
+<section class="section" id="inquire" style="scroll-margin-top:100px">
+  <div class="container narrow">
+    <div class="section-head center reveal"><div class="label rule">Commercial inquiry</div><h2>Tell us about your property.</h2>
+      <p class="lede">We’ll follow up to walk the site or put together a proposal from your photos.</p></div>
+    <form class="form-card" method="post" action="/commercial#inquire" enctype="multipart/form-data">
+      <% if (error) { %><p class="alert"><%= error %></p><% } %>
+      <div class="fgrid">
+        <label class="field"><span>Business / property name *</span><input name="company" required autocomplete="organization" value="<%= form.company || '' %>"></label>
+        <label class="field"><span>Your name *</span><input name="name" required autocomplete="name" value="<%= form.name || '' %>"></label>
+        <label class="field"><span>Email *</span><input name="email" type="email" required autocomplete="email" value="<%= form.email || '' %>"></label>
+        <label class="field"><span>Phone *</span><input name="phone" type="tel" required autocomplete="tel" value="<%= form.phone || '' %>"></label>
+        <label class="field full"><span>Property address *</span><input name="address" required value="<%= form.address || '' %>"></label>
+        <label class="field"><span>Property type *</span>
+          <select name="property_type" required><option value="">Choose…</option><% propertyTypes.forEach(p => { %><option <%= form.property_type === p ? 'selected' : '' %>><%= p %></option><% }) %></select></label>
+        <label class="field"><span>How often?</span>
+          <select name="frequency"><% frequencies.forEach(f => { %><option <%= form.frequency === f ? 'selected' : '' %>><%= f %></option><% }) %></select></label>
+        <fieldset class="field full checks-field"><span>Services you’re interested in *</span>
+          <div class="check-grid">
+            <% const picked = [].concat(form.services || []); commercialServices.forEach(s => { %>
+              <label class="check-box"><input type="checkbox" name="services" value="<%= s.name %>" <%= picked.includes(s.name) ? 'checked' : '' %>><span><%= s.name %></span></label>
+            <% }) %>
+            <label class="check-box"><input type="checkbox" name="services" value="Something else" <%= picked.includes('Something else') ? 'checked' : '' %>><span>Something else</span></label>
+          </div>
+        </fieldset>
+        <label class="field full"><span>Details</span><textarea name="description" rows="5" placeholder="Number of buildings or units, approximate square footage, current issues, ideal start date…"><%= form.description || '' %></textarea></label>
+        <label class="field full"><span>Photos <em>(optional, up to 8)</em></span>
+          <span class="drop"><%- icon('camera') %><strong>Tap to add photos</strong><span class="files" id="files"></span><input type="file" name="photos" accept="image/*" multiple id="photos"></span>
+        </label>
+      </div>
+      <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn btn-gold btn-lg" type="submit">Send Inquiry <%- icon('arrow') %></button>
+    </form>
+  </div>
+</section>
+<script>
+  var inp = document.getElementById('photos'), out = document.getElementById('files');
+  inp.addEventListener('change', function () { var n = inp.files.length; out.textContent = n ? n + ' photo' + (n > 1 ? 's' : '') + ' selected' : ''; });
+</script>
+<%- include('../partials/site-foot') %>

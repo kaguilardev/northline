@@ -2,7 +2,9 @@ const express = require('express');
 const db = require('../db');
 const pricing = require('../lib/pricing');
 const { upload, savePhotos } = require('../lib/photos');
-const { notifyNewRequest } = require('../lib/email');
+const multer = require('multer');
+const { notifyNewRequest, notifyNewApplication } = require('../lib/email');
+const biz = require('../lib/business');
 const { markQuoteAccepted } = require('../lib/pipeline');
 
 const router = express.Router();
@@ -64,6 +66,75 @@ router.post('/estimate', (req, res, next) => {
 });
 
 router.get('/estimate/thanks', (req, res) => res.render('site/thanks', { name: req.session.lastRequestName || '' }));
+
+// ---------- Commercial inquiries (saved as requests marked "commercial") ----------
+const commercialPage = (res, form, error, status = 200) => res.status(status).render('site/commercial', {
+  form, error, commercialServices: biz.COMMERCIAL_SERVICES, propertyTypes: biz.PROPERTY_TYPES, frequencies: biz.FREQUENCIES });
+
+router.get('/commercial', (req, res) => commercialPage(res, {}, null));
+
+router.post('/commercial', (req, res, next) => {
+  upload.array('photos', 8)(req, res, async (err) => {
+    const form = req.body || {};
+    const fail = (msg) => commercialPage(res, form, msg, 400);
+    if (err) return fail(err.code === 'LIMIT_FILE_SIZE' ? 'One of the photos is too large (10 MB max each).' : 'We couldn’t upload those photos. Please try again with up to 8 images.');
+    if (form.website) return res.redirect('/estimate/thanks');
+    const services = [].concat(form.services || []).filter((s) => typeof s === 'string').map((s) => s.slice(0, 80));
+    const name = (form.name || '').trim(), company = (form.company || '').trim();
+    if (!name || !company || !form.phone || !form.email || !form.address || !form.property_type) return fail('Please fill in all the required fields.');
+    if (!services.length) return fail('Pick at least one service you’re interested in.');
+    try {
+      const service = `Commercial: ${services.join(', ')}`;
+      const { rows } = await db.query(
+        `INSERT INTO nl_requests (kind, company, property_type, frequency, name, phone, email, address, service, description)
+         VALUES ('commercial',$1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+        [company.slice(0, 200), biz.PROPERTY_TYPES.includes(form.property_type) ? form.property_type : 'Other',
+          biz.FREQUENCIES.includes(form.frequency) ? form.frequency : null, name, form.phone.trim(), form.email.trim(), form.address.trim(),
+          service, (form.description || '').trim() || null]);
+      const id = rows[0].id;
+      await savePhotos('request', id, req.files || []);
+      notifyNewRequest({ id, name: `${company} (${name})`, service, phone: form.phone, email: form.email, address: form.address,
+        description: form.description, photos: (req.files || []).length, baseUrl: baseUrl(req) }).catch((e) => console.error('notify failed:', e.message));
+      req.session.lastRequestName = name;
+      res.redirect('/estimate/thanks');
+    } catch (e) { next(e); }
+  });
+});
+
+// ---------- Careers ----------
+const RESUME_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'];
+const resumeUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, cb) => cb(null, RESUME_TYPES.includes(file.mimetype)) }).single('resume');
+const careersPage = (res, form, error, status = 200) => res.status(status).render('site/careers', { form, error, openings: biz.OPENINGS });
+
+router.get('/careers', (req, res) => careersPage(res, {}, null));
+
+router.post('/careers', (req, res, next) => {
+  resumeUpload(req, res, async (err) => {
+    const form = req.body || {};
+    const fail = (msg) => careersPage(res, form, msg, 400);
+    if (err) return fail(err.code === 'LIMIT_FILE_SIZE' ? 'That file is too large (10 MB max).' : 'We couldn’t attach that file. Try a PDF, Word document or photo.');
+    if (form.website) return res.redirect('/careers/thanks');
+    const name = (form.name || '').trim();
+    if (!name || !form.phone || !form.email || !form.position) return fail('Please fill in all the required fields.');
+    try {
+      const f = req.file;
+      const { rows } = await db.query(
+        `INSERT INTO nl_applications (name, email, phone, city, position, start_date, availability, has_license, has_transport, experience, resume_name, resume_mime, resume_data)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`,
+        [name.slice(0, 200), form.email.trim(), form.phone.trim(), (form.city || '').trim() || null, String(form.position).slice(0, 100),
+          form.start_date || null, (form.availability || '').trim() || null, form.has_license === 'on', form.has_transport === 'on',
+          (form.experience || '').trim() || null, f ? f.originalname : null, f ? f.mimetype : null, f ? f.buffer : null]);
+      notifyNewApplication({ id: rows[0].id, name, position: form.position, phone: form.phone, email: form.email, baseUrl: baseUrl(req) })
+        .catch((e) => console.error('notify failed:', e.message));
+      req.session.lastRequestName = name;
+      res.redirect('/careers/thanks');
+    } catch (e) { next(e); }
+  });
+});
+
+router.get('/careers/thanks', (req, res) => res.render('site/thanks', { name: req.session.lastRequestName || '', kind: 'application' }));
 
 // ---------- Photos ----------
 router.get('/photo/:id', async (req, res, next) => {

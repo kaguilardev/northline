@@ -62,7 +62,11 @@ app.use((req, res, next) => {
 // Badge in the admin menu: estimate requests nobody has opened yet
 app.use('/admin', async (req, res, next) => {
   if (!req.session.admin) return next();
-  try { res.locals.newRequests = (await db.query(`SELECT count(*)::int AS n FROM nl_requests WHERE viewed_at IS NULL`)).rows[0].n; } catch { /* ignore */ }
+  try {
+    const { rows } = await db.query(`SELECT (SELECT count(*)::int FROM nl_requests WHERE viewed_at IS NULL) AS r,
+      (SELECT count(*)::int FROM nl_applications WHERE viewed_at IS NULL) AS a`);
+    res.locals.newRequests = rows[0].r; res.locals.newApplicants = rows[0].a;
+  } catch { /* ignore */ }
   next();
 });
 
@@ -70,6 +74,7 @@ app.get('/healthz', (req, res) => res.send('ok'));
 app.use(require('./routes/public'));
 app.use(require('./routes/admin'));
 app.use(require('./routes/ops'));
+app.use(require('./routes/applicants'));
 
 app.use((req, res) => res.status(404).render('error', { message: 'Page not found.' }));
 app.use((err, req, res, next) => {

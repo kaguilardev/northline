@@ -1,7 +1,7 @@
 <%- include('../partials/head') %>
 <% const stage = stages.find(s => s.key === r.status) || stages[0]; %>
 <div class="pagehead">
-  <div><a href="/admin/requests" class="muted small">← All requests</a><h1 style="margin-top:6px"><%= r.name %></h1></div>
+  <div><a href="/admin/requests" class="muted small">← All requests</a><h1 style="margin-top:6px"><%= r.kind === 'commercial' ? r.company : r.name %><% if (r.kind === 'commercial') { %> <span class="pill commercial" style="vertical-align:middle">Commercial</span><% } %></h1></div>
   <div class="row">
     <a class="btn gold" href="/admin/quotes/new?request=<%= r.id %>">Create quote</a>
     <% if (r.email) { %><a class="btn ghost" href="#messages">Email</a><% } %>
@@ -29,6 +29,12 @@
 <div class="grid2 wide-left" style="margin-top:18px">
   <section class="card">
     <dl class="facts">
+      <% if (r.kind === 'commercial') { %>
+      <dt>Business</dt><dd><strong><%= r.company %></strong></dd>
+      <dt>Contact</dt><dd><%= r.name %></dd>
+      <dt>Property</dt><dd><%= r.property_type || '—' %></dd>
+      <dt>How often</dt><dd><%= r.frequency || '—' %></dd>
+      <% } %>
       <dt>Service</dt><dd><strong><%= r.service %></strong></dd>
       <dt>Phone</dt><dd><%= r.phone || '—' %></dd>
       <dt>Email</dt><dd><%= r.email || '—' %></dd>

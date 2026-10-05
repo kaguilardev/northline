@@ -1,0 +1,15 @@
+{
+  "name": "Northline Team",
+  "short_name": "Northline",
+  "description": "Schedules, jobs, quotes and requests for the Northline team.",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4efe6",
+  "theme_color": "#0b2f21",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

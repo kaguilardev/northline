@@ -2,7 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b2f21">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Northline">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <title><%= typeof title !== 'undefined' ? title + ' · ' : '' %>Northline Admin</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,10 +21,10 @@
 <% if (admin) { %>
 <header class="topbar">
   <a class="brand" href="/admin"><img src="/img/logo-mark-light.png" alt=""><span>Northline<small>Admin</small></span></a>
-  <% const navItems = [['/admin','Dashboard'],['/admin/requests','Requests'],['/admin/quotes','Quotes'],['/admin/jobs','Jobs'],['/admin/clients','Clients'],['/admin/specials','Specials'],['/admin/email','Email']]; %>
+  <% const navItems = [['/admin','Dashboard'],['/admin/requests','Requests'],['/admin/quotes','Quotes'],['/admin/jobs','Jobs'],['/admin/clients','Clients'],['/admin/applicants','Applicants'],['/admin/specials','Specials'],['/admin/email','Email']]; %>
   <nav>
     <% navItems.forEach(([href,label]) => { const on = href === '/admin' ? path === '/admin' : path.startsWith(href); %>
-      <a href="<%= href %>" class="<%= on ? 'on' : '' %>"><%= label %><% if (label === 'Requests' && typeof newRequests !== 'undefined' && newRequests) { %> <span class="count"><%= newRequests %></span><% } %></a>
+      <a href="<%= href %>" class="<%= on ? 'on' : '' %>"><%= label %><% const badge = label === 'Requests' ? (typeof newRequests !== 'undefined' && newRequests) : label === 'Applicants' ? (typeof newApplicants !== 'undefined' && newApplicants) : 0; if (badge) { %> <span class="count"><%= badge %></span><% } %></a>
     <% }) %>
   </nav>
   <a class="link" href="/" target="_blank">View site ↗</a>

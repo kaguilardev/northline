@@ -1,0 +1,31 @@
+<%- include('../partials/head') %>
+<div class="pagehead"><h1>Applicants</h1><a class="btn ghost" href="/careers" target="_blank">Open careers page ↗</a></div>
+<nav class="tabs" aria-label="Applicant stages">
+  <% tabs.forEach(t => { %><a href="/admin/applicants<%= t.key === 'open' ? '' : '?status=' + t.key %>" class="<%= tab === t.key ? 'on' : '' %>"><%= t.label %> <span class="n"><%= t.n %></span></a><% }) %>
+</nav>
+<div class="card flush">
+  <table>
+    <thead><tr><th>Applied</th><th>Name</th><th>Position</th><th>City</th><th>Checks</th><th>Stage</th></tr></thead>
+    <tbody>
+    <% if (!apps.length) { %><tr><td colspan="6" class="muted center">No applications here. They’ll appear when people apply on the careers page.</td></tr><% } %>
+    <% apps.forEach(a => { %>
+      <tr onclick="location='/admin/applicants/<%= a.id %>'" class="<%= a.viewed_at ? '' : 'unread' %>">
+        <td class="small"><% if (!a.viewed_at) { %><span class="dot" title="Not opened yet"></span><% } %><%= fmtDate(a.created_at) %></td>
+        <td><strong><%= a.name %></strong><div class="muted small"><%= a.phone %><%= a.has_resume ? ' · résumé' : '' %></div></td>
+        <td><%= a.position %></td>
+        <td class="small"><%= a.city || '—' %></td>
+        <td class="small"><%= [a.has_license && 'License', a.has_transport && 'Transport'].filter(Boolean).join(' · ') || '—' %></td>
+        <td onclick="event.stopPropagation()">
+          <form method="post" action="/admin/applicants/<%= a.id %>">
+            <input type="hidden" name="back" value="<%= back %>">
+            <select name="status" class="stage-select app-<%= a.status %>" onchange="this.form.submit()" aria-label="Stage for <%= a.name %>">
+              <% statuses.forEach(s => { %><option value="<%= s.key %>" <%= a.status === s.key ? 'selected' : '' %>><%= s.label %></option><% }) %>
+            </select>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/foot') %>

@@ -2,9 +2,10 @@
 <section class="section">
   <div class="container narrow center">
     <span class="medal" style="margin:0 auto 22px"><%- icon('check') %></span>
-    <div class="label rule">Request received</div>
+    <% const isApp = typeof kind !== 'undefined' && kind === 'application'; %>
+    <div class="label rule"><%= isApp ? 'Application received' : 'Request received' %></div>
     <h1 style="margin:14px 0 18px;font-size:clamp(34px,5vw,52px)">Thank you<%= name ? ', ' + name.split(' ')[0] : '' %>!</h1>
-    <p class="lede" style="margin:0 auto 30px">We’ve got your request and will be in touch soon with next steps and your estimate.</p>
+    <p class="lede" style="margin:0 auto 30px"><%= isApp ? 'Thanks for your interest in joining Northline. We review every application and will reach out if it’s a good fit.' : 'We’ve got your request and will be in touch soon with next steps and your estimate.' %></p>
     <a class="btn btn-ghost" href="/">Back to home</a>
   </div>
 </section>

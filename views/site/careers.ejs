@@ -1,0 +1,70 @@
+<%- include('../partials/site-head', { title: 'Careers', description: 'Join the Northline Home & Outdoor crew. Lawn care, painting and pressure washing jobs in the Triangle.' }) %>
+<section class="page-hero">
+  <div class="container">
+    <div class="label">Careers at Northline</div>
+    <h1>Join a crew that takes pride in the work.</h1>
+    <p class="lede">We’re growing across the Triangle and looking for reliable, hard-working people. Experience helps — a good attitude matters more.</p>
+    <a class="btn btn-gold btn-lg" style="margin-top:26px" href="#apply">Apply Now <%- icon('arrow') %></a>
+  </div>
+  <div class="pines" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head center reveal"><div class="label rule">Open positions</div><h2>Where you could fit in.</h2></div>
+    <div class="grid g4">
+      <% openings.forEach(o => { %>
+      <div class="card svc reveal" style="cursor:default">
+        <span class="medal"><%- icon(o.icon) %></span>
+        <h3><%= o.title %></h3>
+        <span class="more" style="color:var(--muted)"><%= o.type %></span>
+        <p><%= o.blurb %></p>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container grid g3">
+    <div class="pillar reveal"><span class="medal"><%- icon('calendar') %></span><div><h3>Steady schedule</h3><p>Recurring customers mean consistent work week to week.</p></div></div>
+    <div class="pillar reveal"><span class="medal"><%- icon('sprout') %></span><div><h3>Learn and grow</h3><p>We train on equipment and technique, and promote from within.</p></div></div>
+    <div class="pillar reveal"><span class="medal"><%- icon('users') %></span><div><h3>Good people</h3><p>A small, respectful team that does what it says it will.</p></div></div>
+  </div>
+</section>
+
+<section class="section" id="apply" style="scroll-margin-top:100px">
+  <div class="container narrow">
+    <div class="section-head center reveal"><div class="label rule">Apply</div><h2>Tell us about yourself.</h2><p class="lede">Takes about two minutes. A résumé is optional.</p></div>
+    <form class="form-card" method="post" action="/careers#apply" enctype="multipart/form-data">
+      <% if (error) { %><p class="alert"><%= error %></p><% } %>
+      <div class="fgrid">
+        <label class="field"><span>Full name *</span><input name="name" required autocomplete="name" value="<%= form.name || '' %>"></label>
+        <label class="field"><span>Phone *</span><input name="phone" type="tel" required autocomplete="tel" value="<%= form.phone || '' %>"></label>
+        <label class="field"><span>Email *</span><input name="email" type="email" required autocomplete="email" value="<%= form.email || '' %>"></label>
+        <label class="field"><span>City you live in</span><input name="city" autocomplete="address-level2" value="<%= form.city || '' %>"></label>
+        <label class="field"><span>Position *</span>
+          <select name="position" required><option value="">Choose…</option><% openings.forEach(o => { %><option <%= form.position === o.title ? 'selected' : '' %>><%= o.title %></option><% }) %><option <%= form.position === 'Not sure / any' ? 'selected' : '' %>>Not sure / any</option></select></label>
+        <label class="field"><span>Earliest start date</span><input name="start_date" type="date" value="<%= form.start_date || '' %>"></label>
+        <label class="field full"><span>Availability</span><input name="availability" placeholder="e.g. Weekdays, some Saturdays" value="<%= form.availability || '' %>"></label>
+        <fieldset class="field full checks-field"><span>Check any that apply</span>
+          <div class="check-grid">
+            <label class="check-box"><input type="checkbox" name="has_license" <%= form.has_license ? 'checked' : '' %>><span>Valid driver’s license</span></label>
+            <label class="check-box"><input type="checkbox" name="has_transport" <%= form.has_transport ? 'checked' : '' %>><span>Reliable transportation</span></label>
+          </div>
+        </fieldset>
+        <label class="field full"><span>Relevant experience</span><textarea name="experience" rows="4" placeholder="Past jobs, equipment you’ve used, how long…"><%= form.experience || '' %></textarea></label>
+        <label class="field full"><span>Résumé <em>(optional — PDF, Word or a photo)</em></span>
+          <span class="drop"><%- icon('clipboard') %><strong>Tap to attach a file</strong><span class="files" id="files"></span><input type="file" name="resume" accept=".pdf,.doc,.docx,image/*" id="resume"></span>
+        </label>
+      </div>
+      <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn btn-gold btn-lg" type="submit">Submit Application <%- icon('arrow') %></button>
+    </form>
+  </div>
+</section>
+<script>
+  var inp = document.getElementById('resume'), out = document.getElementById('files');
+  inp.addEventListener('change', function () { out.textContent = inp.files[0] ? inp.files[0].name : ''; });
+</script>
+<%- include('../partials/site-foot') %>

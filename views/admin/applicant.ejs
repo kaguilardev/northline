@@ -1,0 +1,45 @@
+<%- include('../partials/head') %>
+<div class="pagehead">
+  <div><a href="/admin/applicants" class="muted small">← All applicants</a><h1 style="margin-top:6px"><%= a.name %></h1></div>
+  <div class="row">
+    <% if (a.resume_name) { %><a class="btn gold" href="/admin/applicants/<%= a.id %>/resume">Download résumé</a><% } %>
+    <% if (a.phone) { %><a class="btn ghost" href="tel:<%= a.phone %>">Call</a><% } %>
+    <% if (a.email) { %><a class="btn ghost" href="mailto:<%= a.email %>">Email</a><% } %>
+  </div>
+</div>
+<section class="card status-card">
+  <div class="status-now"><span class="k">Stage</span><span class="muted">Click to move this applicant along.</span></div>
+  <form method="post" action="/admin/applicants/<%= a.id %>" class="stepper">
+    <% statuses.forEach((s, i) => { const idx = statuses.findIndex(x => x.key === a.status); const done = s.key !== 'declined' && a.status !== 'declined' && i < idx; %>
+      <button name="status" value="<%= s.key %>" class="step <%= s.key === a.status ? 'on' : '' %> <%= done ? 'done' : '' %> <%= s.key === 'declined' ? 'lost' : '' %>">
+        <span class="b"><%= done ? '✓' : (s.key === 'declined' ? '✕' : i + 1) %></span><%= s.label %>
+      </button>
+    <% }) %>
+  </form>
+</section>
+<div class="grid2 wide-left" style="margin-top:18px">
+  <section class="card">
+    <dl class="facts">
+      <dt>Position</dt><dd><strong><%= a.position %></strong></dd>
+      <dt>Phone</dt><dd><%= a.phone || '—' %></dd>
+      <dt>Email</dt><dd><%= a.email || '—' %></dd>
+      <dt>City</dt><dd><%= a.city || '—' %></dd>
+      <dt>Can start</dt><dd><%= a.start_date ? fmtDate(a.start_date) : '—' %></dd>
+      <dt>Availability</dt><dd><%= a.availability || '—' %></dd>
+      <dt>License</dt><dd><%= a.has_license ? 'Yes' : 'No' %></dd>
+      <dt>Transport</dt><dd><%= a.has_transport ? 'Yes' : 'No' %></dd>
+      <dt>Applied</dt><dd><%= new Date(a.created_at).toLocaleString('en-US') %></dd>
+      <dt>Experience</dt><dd style="white-space:pre-line"><%= a.experience || '—' %></dd>
+      <% if (a.resume_name) { %><dt>Résumé</dt><dd><a href="/admin/applicants/<%= a.id %>/resume"><%= a.resume_name %></a></dd><% } %>
+    </dl>
+  </section>
+  <div>
+    <form class="card form" method="post" action="/admin/applicants/<%= a.id %>">
+      <h2>Your notes</h2>
+      <label>Only your team sees these <textarea name="notes" rows="6" placeholder="Interview notes, references, follow-up…"><%= a.notes || '' %></textarea></label>
+      <button class="btn">Save notes</button>
+    </form>
+    <form method="post" action="/admin/applicants/<%= a.id %>/delete" onsubmit="return confirm('Delete this application?')" style="margin-top:14px"><button class="link danger small">Delete application</button></form>
+  </div>
+</div>
+<%- include('../partials/foot') %>

@@ -75,6 +75,11 @@ UPDATE nl_requests SET status='lead' WHERE status='contacted';
 UPDATE nl_requests SET status='accepted' WHERE status='won';
 ALTER TABLE nl_requests ADD CONSTRAINT nl_requests_status_check CHECK (status IN ('new','lead','quoted','accepted','lost'));
 UPDATE nl_requests SET viewed_at=created_at WHERE viewed_at IS NULL AND status<>'new';
+-- Commercial inquiries share the requests table
+ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'residential';
+ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS company TEXT;
+ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS property_type TEXT;
+ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS frequency TEXT;
 -- Anyone who has accepted a quote is a customer, not a lead
 UPDATE nl_clients c SET status='scheduled' WHERE status IN ('lead','quoted')
   AND EXISTS (SELECT 1 FROM nl_quotes q WHERE q.client_id=c.id AND q.status='accepted');
@@ -153,3 +158,26 @@ CREATE TABLE IF NOT EXISTS nl_messages (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS nl_messages_request_idx ON nl_messages (request_id, created_at);
+
+-- ── Job applications from the careers page ──
+CREATE TABLE IF NOT EXISTS nl_applications (
+  id             SERIAL PRIMARY KEY,
+  name           TEXT NOT NULL,
+  email          TEXT,
+  phone          TEXT,
+  city           TEXT,
+  position       TEXT,
+  start_date     DATE,
+  availability   TEXT,
+  has_license    BOOLEAN NOT NULL DEFAULT false,
+  has_transport  BOOLEAN NOT NULL DEFAULT false,
+  experience     TEXT,
+  resume_name    TEXT,
+  resume_mime    TEXT,
+  resume_data    BYTEA,
+  status         TEXT NOT NULL DEFAULT 'new'
+                 CHECK (status IN ('new','reviewing','interview','hired','declined')),
+  notes          TEXT,
+  viewed_at      TIMESTAMPTZ,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);

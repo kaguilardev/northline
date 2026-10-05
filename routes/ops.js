@@ -40,16 +40,18 @@ router.get('/admin/requests', async (req, res, next) => {
   try {
     const tab = REQ_STATUSES.includes(req.query.status) || req.query.status === 'archived' ? req.query.status : 'active';
     const show = tab === 'active' ? ACTIVE : tab === 'archived' ? ARCHIVED : [tab];
+    const kind = ['residential', 'commercial'].includes(req.query.kind) ? req.query.kind : '';
     const { rows } = await db.query(`
       SELECT r.*, (SELECT count(*)::int FROM nl_photos p WHERE p.owner_type='request' AND p.owner_id=r.id) AS photo_count,
         (SELECT max(created_at) FROM nl_messages m WHERE m.request_id=r.id) AS last_message_at
-      FROM nl_requests r WHERE r.status = ANY($1) ORDER BY r.created_at DESC`, [show]);
+      FROM nl_requests r WHERE r.status = ANY($1) AND ($2 = '' OR r.kind = $2) ORDER BY r.created_at DESC`, [show, kind]);
     const counts = Object.fromEntries((await db.query(`SELECT status, count(*)::int AS n FROM nl_requests GROUP BY status`)).rows.map((r) => [r.status, r.n]));
     const sum = (keys) => keys.reduce((t, k) => t + (counts[k] || 0), 0);
     const tabs = [{ key: 'active', label: 'All active', n: sum(ACTIVE) },
       ...REQ_STAGES.filter((st) => ACTIVE.includes(st.key)).map((st) => ({ key: st.key, label: st.label === 'Lead' ? 'Leads' : st.label, n: counts[st.key] || 0 })),
       { key: 'archived', label: 'Archived', n: sum(ARCHIVED) }];
-    res.render('admin/requests', { title: 'Requests', requests: rows, tab, tabs, stages: REQ_STAGES, back: req.originalUrl });
+    const commercialCount = (await db.query(`SELECT count(*)::int AS n FROM nl_requests WHERE kind='commercial' AND status = ANY($1)`, [show])).rows[0].n;
+    res.render('admin/requests', { title: 'Requests', requests: rows, tab, tabs, kind, commercialCount, stages: REQ_STAGES, back: req.originalUrl });
   } catch (e) { next(e); }
 });
 

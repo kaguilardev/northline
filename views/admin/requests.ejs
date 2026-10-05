@@ -1,8 +1,14 @@
 <%- include('../partials/head') %>
 <div class="pagehead"><h1>Estimate requests</h1><a class="btn ghost" href="/estimate" target="_blank">Open public form ↗</a></div>
+<% const qs = (o) => { const p = new URLSearchParams(); const s = o.status ?? tab, k = o.kind ?? kind; if (s !== 'active') p.set('status', s); if (k) p.set('kind', k); const str = p.toString(); return '/admin/requests' + (str ? '?' + str : ''); }; %>
 <nav class="tabs" aria-label="Request stages">
-  <% tabs.forEach(t => { %><a href="/admin/requests<%= t.key === 'active' ? '' : '?status=' + t.key %>" class="<%= tab === t.key ? 'on' : '' %>"><%= t.label %> <span class="n"><%= t.n %></span></a><% }) %>
+  <% tabs.forEach(t => { %><a href="<%= qs({ status: t.key }) %>" class="<%= tab === t.key ? 'on' : '' %>"><%= t.label %> <span class="n"><%= t.n %></span></a><% }) %>
 </nav>
+<div class="seg" role="group" aria-label="Customer type">
+  <a href="<%= qs({ kind: '' }) %>" class="<%= !kind ? 'on' : '' %>">Everyone</a>
+  <a href="<%= qs({ kind: 'residential' }) %>" class="<%= kind === 'residential' ? 'on' : '' %>">Homeowners</a>
+  <a href="<%= qs({ kind: 'commercial' }) %>" class="<%= kind === 'commercial' ? 'on' : '' %>">Commercial<% if (commercialCount) { %> <span class="n"><%= commercialCount %></span><% } %></a>
+</div>
 <p class="muted small" style="margin:-6px 0 14px">
   <% if (tab === 'archived') { %>Accepted and lost requests. Accepted ones are now customers in Clients.<% } else { %>Change the stage right from the list. When a customer accepts their quote, the request moves to Archived automatically.<% } %>
 </p>
@@ -14,7 +20,7 @@
     <% requests.forEach(r => { %>
       <tr onclick="location='/admin/requests/<%= r.id %>'" class="<%= r.viewed_at ? '' : 'unread' %>">
         <td class="small"><% if (!r.viewed_at) { %><span class="dot" title="Not opened yet"></span><% } %><%= fmtDate(r.created_at) %></td>
-        <td><strong><%= r.name %></strong><div class="muted small"><%= r.phone %><% if (r.last_message_at) { %> · ✉ emailed <%= fmtDate(r.last_message_at) %><% } %></div></td>
+        <td><% if (r.kind === 'commercial') { %><span class="pill commercial">Commercial</span> <strong><%= r.company %></strong><div class="small"><%= r.name %></div><% } else { %><strong><%= r.name %></strong><% } %><div class="muted small"><%= r.phone %><% if (r.last_message_at) { %> · ✉ emailed <%= fmtDate(r.last_message_at) %><% } %></div></td>
         <td><%= r.service %></td>
         <td class="small"><%= r.address %></td>
         <td><%= r.photo_count || '—' %></td>
