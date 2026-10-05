@@ -1,0 +1,32 @@
+<%- include('partials/head', { title: 'Clients' }) %>
+<div class="pagehead">
+  <h1>Clients</h1>
+  <a class="btn" href="/admin/clients/new">+ Add client</a>
+</div>
+<form class="filters" method="get">
+  <input type="search" name="q" value="<%= q %>" placeholder="Search name, email or address">
+  <select name="status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    <% ['lead','quoted','scheduled','in_progress','completed','on_hold'].forEach(s => { %>
+      <option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s.replace('_',' ') %></option>
+    <% }) %>
+  </select>
+</form>
+<div class="card flush">
+  <table>
+    <thead><tr><th>Name</th><th>Service</th><th>Status</th><th>Next visit</th><th>Contact</th></tr></thead>
+    <tbody>
+    <% if (!clients.length) { %><tr><td colspan="5" class="muted center">No clients yet.</td></tr><% } %>
+    <% clients.forEach(c => { %>
+      <tr onclick="location='/admin/clients/<%= c.id %>'">
+        <td><strong><%= c.name %></strong><div class="muted small"><%= c.address || '' %></div></td>
+        <td><%= c.service || '—' %></td>
+        <td><span class="pill <%= c.status %>"><%= c.status.replace('_',' ') %></span></td>
+        <td><%= c.next_visit ? new Date(c.next_visit).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
+        <td class="small"><%= c.email || '' %><br><%= c.phone || '' %></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/foot') %>

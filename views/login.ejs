@@ -1,0 +1,13 @@
+<%- include('partials/head', { title: 'Sign in' }) %>
+<div class="auth">
+  <form method="post" action="/login" class="card">
+    <p class="eyebrow"><%= business %></p>
+    <h1>Admin sign in</h1>
+    <% if (error) { %><p class="alert"><%= error %></p><% } %>
+    <label>Email <input type="email" name="email" value="<%= email %>" required autofocus autocomplete="username"></label>
+    <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
+    <button class="btn full">Sign in</button>
+    <a class="muted small" href="/">← Back to site</a>
+  </form>
+</div>
+<%- include('partials/foot') %>

@@ -1,0 +1,41 @@
+<%- include('partials/head', { title: 'Specials' }) %>
+<div class="pagehead"><h1>Marketing specials</h1></div>
+<form class="filters" method="get">
+  <select name="season">
+    <% Object.entries(seasons).forEach(([k, v]) => { %><option value="<%= k %>" <%= season === k ? 'selected' : '' %>><%= v.label %></option><% }) %>
+  </select>
+  <input name="service" value="<%= service %>" placeholder="Add-on to mention (optional)">
+  <label class="inline">Ends <input type="date" name="end" value="<%= end %>"></label>
+  <button class="btn ghost">Generate ideas</button>
+</form>
+<div class="ideas">
+  <% ideas.forEach(i => { %>
+  <form class="card idea" method="post" action="/admin/specials">
+    <span class="eyebrow"><%= i.season %> · <%= i.discount %></span>
+    <input class="title" name="title" value="<%= i.title %>">
+    <textarea name="body" rows="5"><%= i.body %></textarea>
+    <input type="hidden" name="discount" value="<%= i.discount %>">
+    <input type="hidden" name="ends_on" value="<%= end %>">
+    <button class="btn small">Save special</button>
+  </form>
+  <% }) %>
+</div>
+<h2>Saved specials</h2>
+<div class="card flush">
+  <table>
+    <thead><tr><th>Special</th><th>Offer</th><th>Ends</th><th></th></tr></thead>
+    <tbody>
+    <% if (!saved.length) { %><tr><td colspan="4" class="muted center">Save an idea above to use it in an email.</td></tr><% } %>
+    <% saved.forEach(s => { %>
+      <tr>
+        <td><strong><%= s.title %></strong><div class="muted small clamp"><%= s.body %></div></td>
+        <td><%= s.discount || '—' %></td>
+        <td><%= s.ends_on ? new Date(s.ends_on).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '—' %></td>
+        <td class="actions"><a class="btn small" href="/admin/email?special=<%= s.id %>">Email it</a>
+          <form method="post" action="/admin/specials/<%= s.id %>/delete" onsubmit="return confirm('Delete this special?')"><button class="link danger small">Delete</button></form></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/foot') %>
