@@ -41,16 +41,14 @@ const day = (n) => { const d = new Date(new Date().toLocaleDateString('en-CA', {
       for (const e of crew) await db.query('INSERT INTO nl_job_crew (job_id, user_id) VALUES ($1,$2)', [id, ids[e]]);
       await db.query('UPDATE nl_jobs SET employees=$1 WHERE id=$2', [crew.map((e) => DEMO_USERS.find((u) => u.email === e).name.split(' ')[0]).join(', '), id]);
     };
-    await job(c1, 'Lawn Care', 'Full Refresh — medium lawn', day(0), '08:00', 269, ['marcus@northline.test', 'dee@northline.test'], 'Gate code 4412. Dog is friendly.');
-    await job(c2, 'Pressure Washing', 'Driveway + front walkway', day(1), '10:30', 125, ['dee@northline.test'], null);
-    await job(c3, 'Painting', 'Room Refresh — living room', day(3), '09:00', 650, ['marcus@northline.test'], 'Customer is supplying paint (SW Agreeable Gray).');
-    await job(c1, 'Lawn Care', 'Basic Lawn Care', null, null, 59, [], null);
-    await db.query(`INSERT INTO nl_requests (name, phone, email, address, service, description) VALUES
-      ('Casey Morgan','919-555-0110','casey@example.com','5 Elm St, Raleigh, NC','Pressure Washing','Driveway and back patio, pretty grimy.')`);
-    await db.query(`INSERT INTO nl_requests (kind, company, property_type, frequency, name, phone, email, address, service, description) VALUES
-      ('commercial','Brightside Dental','Office','Every other week','Renee Park','919-555-0120','renee@example.com','200 Main St, Durham, NC','Commercial: Grounds Maintenance, Pressure Washing','Small lot, front beds and sidewalk.')`);
+    await job(c1, 'Concrete Patio', '12 × 16 ft broom-finish patio', day(0), '08:00', 1642, ['marcus@northline.test', 'dee@northline.test'], 'Gate code 4412. Dog is friendly.');
+    await job(c2, 'Concrete Walkway', '3 × 30 ft walkway, side of house', day(1), '10:30', 770, ['dee@northline.test'], null);
+    await job(c3, 'Patio Extension', '8 × 12 ft extension off the back patio', day(3), '09:00', 821, ['marcus@northline.test'], 'Match the existing broom finish.');
+    await job(c1, 'Concrete Pad / Small Slab', '10 × 12 ft shed pad', null, null, 970, [], null);
+    await db.query(`INSERT INTO nl_requests (name, phone, email, address, service, measurements, current_surface, finish, description) VALUES
+      ('Casey Morgan','919-555-0110','casey@example.com','5 Elm St, Raleigh, NC','Concrete Patio','About 14 × 18 ft','Grass','I need guidance','Backyard patio off the kitchen door for a table and grill.')`);
     await db.query(`INSERT INTO nl_applications (name, email, phone, city, position, availability, has_license, has_transport, experience) VALUES
-      ('Luis Ortega','luis@example.com','919-555-0130','Durham','Lawn Care Crew Member','Weekdays',true,true,'Two summers mowing commercial lots.')`);
+      ('Luis Ortega','luis@example.com','919-555-0130','Durham','Concrete Crew Member','Weekdays',true,true,'Two years forming and pouring residential slabs.')`);
   }
   console.log('Test database seeded. Demo sign-ins are listed at the top of scripts/seed-test.js.');
   process.exit(0);

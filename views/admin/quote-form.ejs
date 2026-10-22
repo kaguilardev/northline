@@ -29,7 +29,7 @@
         </div>
       </fieldset>
       <div class="cols">
-        <label>Project title <input name="title" value="<%= quote.title || '' %>" placeholder="e.g. Curb Appeal — front yard"></label>
+        <label>Project title <input name="title" value="<%= quote.title || '' %>" placeholder="e.g. Backyard patio — 12 × 16 ft"></label>
         <label>Valid until <input type="date" name="valid_until" value="<%= quote.valid_until || '' %>"></label>
       </div>
     </section>
@@ -41,52 +41,34 @@
       </table>
       <div style="padding:12px 16px"><button type="button" class="btn ghost small" id="addBlank">+ Custom line</button> <span class="muted small">or add items from the price book →</span></div>
       <div class="total-row"><span>Total</span><strong id="total">$0</strong></div>
+      <p class="notice" id="minWarn" style="margin:0 16px 14px" hidden></p>
     </section>
 
     <section class="card form" style="margin-top:18px">
-      <label>Notes for the customer <textarea name="notes" rows="4" placeholder="Schedule, what's included, payment terms…"><%= quote.notes || '' %></textarea></label>
-      <label class="check"><input type="checkbox" name="paint_note" id="paintNote" <%= quote.paint_note ? 'checked' : '' %>> Show “Paint not included — materials billed separately”</label>
+      <label>Notes for the customer <textarea name="notes" rows="4" placeholder="Thickness, finish, schedule, payment terms…"><%= quote.notes || '' %></textarea></label>
+      <% if (quote.paint_note) { %><label class="check"><input type="checkbox" name="paint_note" checked> Show “Paint not included” (from an older painting quote)</label><% } %>
       <input type="hidden" name="items" id="itemsField">
       <div class="row"><button class="btn gold">Save quote</button><a class="btn ghost" href="/admin/quotes">Cancel</a></div>
     </section>
   </div>
 
-  <aside class="card book sticky" id="book">
+  <aside class="card book sticky" id="book" data-type="<%= fromRequest ? fromRequest.service : '' %>">
     <h2 style="margin-bottom:12px">Price book</h2>
-    <div class="book-tabs" role="tablist">
-      <button type="button" role="tab" data-tab="lawn">Lawn care</button>
-      <button type="button" role="tab" data-tab="outdoor">Outdoor extras</button>
-      <button type="button" role="tab" data-tab="paint">Painting</button>
+    <h3>Concrete</h3>
+    <label class="mini">Project type <select id="cType"></select></label>
+    <div class="row2">
+      <label class="mini">Length (ft) <input id="cLen" type="number" min="0" step="0.5" inputmode="decimal"></label>
+      <label class="mini">Width (ft) <input id="cWid" type="number" min="0" step="0.5" inputmode="decimal"></label>
     </div>
+    <p class="muted small" id="cCalc" style="margin:2px 0 10px">Enter the length and width.</p>
+    <button type="button" class="btn full" id="addConcrete" disabled>Enter length and width</button>
+    <% if (fromRequest && fromRequest.measurements) { %><p class="muted small" style="margin:8px 0 0">Customer’s size: <strong><%= fromRequest.measurements %></strong></p><% } %>
 
-    <div class="pane" data-pane="lawn">
-      <h3>Lawn package</h3>
-      <div class="row2">
-        <label class="mini">Package <select id="lawnPkg"></select></label>
-        <label class="mini">Lawn size <select id="lawnSize"></select></label>
-      </div>
-      <p class="muted small" id="lawnIncludes" style="margin:2px 0 10px"></p>
-      <div class="mini-label">Choose a price</div>
-      <div class="choices" id="lawnChoices"></div>
-      <button type="button" class="btn full" id="addLawn" disabled>Choose a price first</button>
-
-      <h3>Lawn conditions</h3>
-      <p class="muted small" style="margin:-4px 0 6px">Extra charges for harder yards. Pick how much, then add.</p>
-      <div id="adjList"></div>
-    </div>
-
-    <div class="pane" data-pane="outdoor" hidden>
-      <h3>Cleanup &amp; pressure washing</h3>
-      <p class="muted small" style="margin:-4px 0 6px">Starting prices. You can change the amount after adding.</p>
-      <div id="addonList"></div>
-    </div>
-
-    <div class="pane" data-pane="paint" hidden>
-      <h3>Painting packages</h3>
-      <div id="paintList"></div>
-      <h3>Painting add-ons</h3>
-      <div id="paintAddonList"></div>
-    </div>
+    <h3>Extras</h3>
+    <p class="muted small" style="margin:-4px 0 6px">Uses the area above. Change it if the extra covers a different area.</p>
+    <label class="mini">Area (sq ft) <input id="xArea" type="number" min="0" step="1" inputmode="decimal"></label>
+    <div id="extraList"></div>
+    <p class="muted small" style="margin:10px 0 0"><a href="/admin/prices">Change rates on the Prices page</a></p>
   </aside>
 </form>
 

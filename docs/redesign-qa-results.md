@@ -9,7 +9,7 @@ Checklist: https://claude.ai/artifact/LN4MvFgNjiiNqCdLN3QSuT
 
 | Check | Note |
 | --- | --- |
-| You can sign in to the admin | “back end doesnt corelate with front end now”: the admin still uses the old lawn/paint price book, quote builder, specials and commercial-request views. |
+| You can sign in to the admin | “back end doesnt corelate with front end now”: the admin still uses the old lawn/paint price book, quote builder, specials and commercial-request views. **Fixed:** concrete price book (per sq ft, 5% under Raleigh–Durham market), length × width quote builder with a minimum-job check, concrete specials and job types. |
 
 ## Passed
 

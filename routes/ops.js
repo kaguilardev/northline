@@ -15,9 +15,7 @@ router.use('/admin', requireAdmin);
 
 const JOB_STATUSES = ['scheduled', 'in_progress', 'completed', 'cancelled'];
 const PAY_STATUSES = ['unpaid', 'deposit', 'paid'];
-// Concrete types first; the older services stay so existing jobs keep their type when edited
-const SERVICE_TYPES = ['Concrete Patio', 'Patio Extension', 'Concrete Walkway', 'Concrete Pad / Small Slab', 'Other',
-  'Lawn Care', 'Yard Cleanup', 'Pressure Washing', 'Painting', 'Remodeling', 'Decks & Fences'];
+const SERVICE_TYPES = ['Concrete Patio', 'Patio Extension', 'Concrete Walkway', 'Concrete Pad / Small Slab', 'Other'];
 const num = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
 
 // Everyone who can be put on a job (crew first)
@@ -126,8 +124,8 @@ router.get('/admin/quotes', async (req, res, next) => {
 });
 
 function priceBook() {
-  const { LAWN_SIZES, LAWN_PACKAGES, OUTDOOR_ADDONS, LAWN_ADJUSTMENTS, PAINT_PACKAGES, PAINT_ADDONS } = pricing;
-  return { LAWN_SIZES, LAWN_PACKAGES, OUTDOOR_ADDONS, LAWN_ADJUSTMENTS, PAINT_PACKAGES, PAINT_ADDONS };
+  const { CONCRETE_RATES, CONCRETE_EXTRAS, MINIMUM_JOB } = pricing;
+  return { CONCRETE_RATES, CONCRETE_EXTRAS, MINIMUM_JOB };
 }
 
 router.get('/admin/quotes/new', async (req, res, next) => {

@@ -43,13 +43,6 @@ app.locals.fmtDate = fmtDate;
 app.locals.services = pricing.SERVICES;
 app.locals.areas = pricing.SERVICE_AREAS;
 app.locals.policy = pricing.POLICY;
-app.locals.lawnSizes = pricing.LAWN_SIZES;
-app.locals.lawnPackages = pricing.LAWN_PACKAGES;
-app.locals.outdoorAddons = pricing.OUTDOOR_ADDONS;
-app.locals.lawnAdjustments = pricing.LAWN_ADJUSTMENTS;
-app.locals.paintPackages = pricing.PAINT_PACKAGES;
-app.locals.paintAddons = pricing.PAINT_ADDONS;
-app.locals.pressureSurfaces = pricing.PRESSURE_SURFACES;
 app.locals.contact = { phone: process.env.BUSINESS_PHONE || '', email: process.env.BUSINESS_EMAIL || '' };
 // Home page hero photo: drop a photo of a finished Northline patio at public/img/hero-patio.jpg
 app.locals.heroPhoto = require('fs').existsSync(path.join(__dirname, 'public', 'img', 'hero-patio.jpg')) ? '/img/hero-patio.jpg' : null;

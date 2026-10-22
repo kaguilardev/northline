@@ -25,17 +25,13 @@ router.get('/admin/prices', async (req, res, next) => {
 router.post('/admin/prices', requireOwner, async (req, res, next) => {
   try {
     const b = req.body;
-    const pb = { lawn: {}, addons: {}, conditions: {}, paint: {}, paintAddons: {} };
-    for (const p of pricing.LAWN_PACKAGES) {
-      pb.lawn[p.key] = {};
-      for (const s of pricing.LAWN_SIZES) pb.lawn[p.key][s.key] = [b[`lawn.${p.key}.${s.key}.lo`], b[`lawn.${p.key}.${s.key}.hi`]];
-    }
-    for (const a of pricing.OUTDOOR_ADDONS) pb.addons[a.key] = b[`addon.${a.key}`];
-    for (const a of pricing.LAWN_ADJUSTMENTS) pb.conditions[a.key] = (a.levels || [0, 0]).map((_, i) => b[`cond.${a.key}.${i}`]);
-    for (const p of pricing.PAINT_PACKAGES) pb.paint[p.key] = b[`paint.${p.key}`];
-    for (const a of pricing.PAINT_ADDONS) pb.paintAddons[a.key] = b[`paintAddon.${a.key}`];
+    const pb = {
+      rates: Object.fromEntries(pricing.CONCRETE_RATES.map((r) => [r.key, b[`rate.${r.key}`]])),
+      extras: Object.fromEntries(pricing.CONCRETE_EXTRAS.map((x) => [x.key, b[`extra.${x.key}`]])),
+      minimum: b.minimum,
+    };
     await settings.savePricebook(pb, by(req));
-    flashTo(res, '/admin/prices', 'Prices saved — the website and quote builder are updated.');
+    flashTo(res, '/admin/prices', 'Prices saved — the quote builder uses the new rates.');
   } catch (e) { next(e); }
 });
 

@@ -4,11 +4,13 @@
 <nav class="tabs" aria-label="Request stages">
   <% tabs.forEach(t => { %><a href="<%= qs({ status: t.key }) %>" class="<%= tab === t.key ? 'on' : '' %>"><%= t.label %> <span class="n"><%= t.n %></span></a><% }) %>
 </nav>
+<% if (commercialCount || kind) { %><%# The site no longer takes commercial requests; the filter stays only while older ones are open %>
 <div class="seg" role="group" aria-label="Customer type">
   <a href="<%= qs({ kind: '' }) %>" class="<%= !kind ? 'on' : '' %>">Everyone</a>
   <a href="<%= qs({ kind: 'residential' }) %>" class="<%= kind === 'residential' ? 'on' : '' %>">Homeowners</a>
-  <a href="<%= qs({ kind: 'commercial' }) %>" class="<%= kind === 'commercial' ? 'on' : '' %>">Commercial<% if (commercialCount) { %> <span class="n"><%= commercialCount %></span><% } %></a>
+  <a href="<%= qs({ kind: 'commercial' }) %>" class="<%= kind === 'commercial' ? 'on' : '' %>">Commercial (older)<% if (commercialCount) { %> <span class="n"><%= commercialCount %></span><% } %></a>
 </div>
+<% } %>
 <p class="muted small" style="margin:-6px 0 14px">
   <% if (tab === 'archived') { %>Accepted and lost requests. Accepted ones are now customers in Clients.<% } else { %>Change the stage right from the list. When a customer accepts their quote, the request moves to Archived automatically.<% } %>
 </p>

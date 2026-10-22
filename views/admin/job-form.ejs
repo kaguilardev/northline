@@ -24,8 +24,8 @@
         <label class="span2">Customer
           <select name="client_id"><option value="">Choose a customer…</option><% clients.forEach(c => { %><option value="<%= c.id %>" <%= String(job.client_id) === String(c.id) ? 'selected' : '' %>><span translate="no"><%= c.name %></span></option><% }) %></select></label>
         <label>Type of service
-          <select name="service"><option value="">Choose…</option><% SERVICE_TYPES.forEach(s => { %><option value="<%= s %>" <%= job.service === s ? 'selected' : '' %>><%= s %></option><% }) %></select></label>
-        <label>What we’re doing <input name="package" value="<%= job.package || '' %>" placeholder="e.g. Full Refresh — medium lawn"></label>
+          <select name="service"><option value="">Choose…</option><% SERVICE_TYPES.concat(job.service && !SERVICE_TYPES.includes(job.service) ? [job.service] : []).forEach(s => { %><option value="<%= s %>" <%= job.service === s ? 'selected' : '' %>><%= s %></option><% }) %></select></label>
+        <label>What we’re doing <input name="package" value="<%= job.package || '' %>" placeholder="e.g. 12 × 16 ft broom-finish patio"></label>
         <label class="span2">Notes for the crew <small class="muted">— only your team sees this</small><textarea name="notes" rows="2" placeholder="Gate code, dog in yard, park on street…"><%= job.notes || '' %></textarea></label>
       </div>
     </section>

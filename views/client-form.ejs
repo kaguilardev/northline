@@ -5,7 +5,7 @@
   <% if (error) { %><p class="alert"><%= error %></p><% } %>
   <div class="cols">
     <label>Name * <input name="name" value="<%= customer.name || '' %>" required></label>
-    <label>Service <input name="service" value="<%= customer.service || '' %>" placeholder="e.g. Weekly mowing"></label>
+    <label>Service <input name="service" value="<%= customer.service || '' %>" placeholder="e.g. Concrete patio"></label>
     <label>Email <input type="email" name="email" value="<%= customer.email || '' %>"></label>
     <label>Phone <input name="phone" value="<%= customer.phone || '' %>"></label>
     <label class="span2">Address <input name="address" value="<%= customer.address || '' %>"></label>
