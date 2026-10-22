@@ -41,7 +41,7 @@
             <input type="file" name="photos" accept="image/*" multiple id="photos">
           </span>
         </label>
-        <p class="form-note full"><%- icon('clipboard') %><span>Photos let us do an initial evaluation. Your final price is confirmed after we review the project’s conditions on site.</span></p>
+        <p class="form-note full"><%- icon('clipboard') %><span>Photos let us do an initial evaluation. Your final price is confirmed after we see the space in person.</span></p>
         <label class="field full"><span>Anything else we should know?</span><textarea name="description" rows="4" placeholder="How you’d like to use the space, slopes, trees, drainage, gates…"><%= form.description || '' %></textarea></label>
 
         <div class="form-section">Your contact details</div>
@@ -55,7 +55,7 @@
     </form>
     <aside class="aside-list">
       <div><span class="medal"><%- icon('camera') %></span><div><h3>Photos help</h3><p>Photos of the space and the access let us give you an initial idea before the visit.</p></div></div>
-      <div><span class="medal"><%- icon('calendar') %></span><div><h3>Site visit</h3><p>We visit to measure and check the ground, slope and access.</p></div></div>
+      <div><span class="medal"><%- icon('calendar') %></span><div><h3>Home visit</h3><p>We come to your home to measure and check the ground, slope and access.</p></div></div>
       <div><span class="medal"><%- icon('clipboard') %></span><div><h3>Written proposal</h3><p>You’ll get a clear written proposal you can review and accept online.</p></div></div>
       <div><span class="medal"><%- icon('pin') %></span><div><h3>Service area</h3><p><%= areas.join(' • ') %></p></div></div>
       <% if (contact.phone || contact.email) { %>
