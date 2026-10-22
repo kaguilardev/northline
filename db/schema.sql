@@ -80,6 +80,10 @@ ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'res
 ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS company TEXT;
 ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS property_type TEXT;
 ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS frequency TEXT;
+-- Concrete project details from the estimate form
+ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS measurements TEXT;
+ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS current_surface TEXT;
+ALTER TABLE nl_requests ADD COLUMN IF NOT EXISTS finish TEXT;
 
 -- ── Quotes / estimates ──
 CREATE TABLE IF NOT EXISTS nl_quotes (
@@ -140,6 +144,9 @@ CREATE TABLE IF NOT EXISTS nl_photos (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS nl_photos_owner_idx ON nl_photos (owner_type, owner_id);
+-- Job photos can also show the preparation stage (before → prep → after)
+ALTER TABLE nl_photos DROP CONSTRAINT IF EXISTS nl_photos_kind_check;
+ALTER TABLE nl_photos ADD CONSTRAINT nl_photos_kind_check CHECK (kind IN ('upload','before','prep','after'));
 
 -- ── Emails sent to (and later received from) customers about a request ──
 CREATE TABLE IF NOT EXISTS nl_messages (

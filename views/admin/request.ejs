@@ -36,6 +36,11 @@
       <dt>How often</dt><dd><%= r.frequency || '—' %></dd>
       <% } %>
       <dt>Service</dt><dd><strong><%= r.service %></strong></dd>
+      <% if (r.measurements || r.current_surface || r.finish) { %>
+      <dt>Approx. size</dt><dd><%= r.measurements || '—' %></dd>
+      <dt>Current surface</dt><dd><%= r.current_surface || '—' %></dd>
+      <dt>Finish</dt><dd><%= r.finish || '—' %></dd>
+      <% } %>
       <dt>Phone</dt><dd><span translate="no"><%= r.phone || '—' %></span></dd>
       <dt>Email</dt><dd><span translate="no"><%= r.email || '—' %></span></dd>
       <dt>Address</dt><dd><span translate="no"><%= r.address || '—' %></span><% if (r.address) { %> · <a href="https://maps.google.com/?q=<%= encodeURIComponent(r.address) %>" target="_blank">Map ↗</a><% } %></dd>

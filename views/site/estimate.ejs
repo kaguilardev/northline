@@ -1,9 +1,9 @@
-<%- include('../partials/site-head', { title: 'Request a Free Estimate' }) %>
+<%- include('../partials/site-head', { title: 'Request a Free Estimate', description: 'Request a free estimate for a concrete patio, patio extension, walkway or small slab in Durham, Raleigh, Cary or Chapel Hill.' }) %>
 <section class="page-hero">
   <div class="container">
     <div class="label">Request an estimate</div>
     <h1>Get your free estimate.</h1>
-    <p class="lede">Tell us about your project and add a few photos. Photos let us give you a quote quickly — often without a site visit.</p>
+    <p class="lede">Tell us about your concrete project and add photos of the space and how we can get to it.</p>
   </div>
   <div class="pines" aria-hidden="true"></div>
 </section>
@@ -12,36 +12,58 @@
     <form class="form-card" method="post" action="/estimate" enctype="multipart/form-data">
       <% if (error) { %><p class="alert"><%= error %></p><% } %>
       <div class="fgrid">
-        <label class="field"><span>Name *</span><input name="name" required autocomplete="name" value="<%= form.name || '' %>"></label>
-        <label class="field"><span>Phone *</span><input name="phone" type="tel" required autocomplete="tel" value="<%= form.phone || '' %>"></label>
-        <label class="field"><span>Email *</span><input name="email" type="email" required autocomplete="email" value="<%= form.email || '' %>"></label>
-        <label class="field"><span>Preferred date <em>(optional)</em></span><input name="preferred_date" type="date" value="<%= form.preferred_date || '' %>"></label>
-        <label class="field full"><span>Property address *</span><input name="address" required autocomplete="street-address" value="<%= form.address || '' %>"></label>
-        <label class="field full"><span>Service needed *</span>
+        <div class="form-section" style="border-top:0;padding-top:0;margin-top:0">Your project</div>
+        <label class="field full"><span>Project type *</span>
           <select name="service" required>
-            <option value="">Choose a service…</option>
+            <option value="">Choose a project type…</option>
             <% serviceOptions.forEach(o => { %><option value="<%= o %>" <%= form.service === o ? 'selected' : '' %>><%= o %></option><% }) %>
           </select>
         </label>
-        <label class="field full"><span>Project description</span><textarea name="description" rows="5" placeholder="What would you like done? For lawn care, an approximate lawn size helps."><%= form.description || '' %></textarea></label>
+        <label class="field"><span>Approximate size</span><input name="measurements" maxlength="200" placeholder="e.g. 12 × 16 ft, or about 200 sq ft" value="<%= form.measurements || '' %>"></label>
+        <label class="field"><span>Approximate date <em>(optional)</em></span><input name="preferred_date" type="date" value="<%= form.preferred_date || '' %>"></label>
+        <fieldset class="field full checks-field"><span>What’s there now?</span>
+          <div class="check-grid c4">
+            <% surfaces.forEach(s => { %><label class="check-box"><input type="radio" name="current_surface" value="<%= s %>" <%= form.current_surface === s ? 'checked' : '' %>><span><%= s %></span></label><% }) %>
+          </div>
+        </fieldset>
+        <label class="field full"><span>Desired finish</span>
+          <select name="finish">
+            <option value="">Choose a finish…</option>
+            <% finishes.forEach(f => { %><option value="<%= f %>" <%= form.finish === f ? 'selected' : '' %>><%= f %></option><% }) %>
+          </select>
+        </label>
         <label class="field full"><span>Photos <em>(up to 8)</em></span>
           <span class="drop" id="drop">
             <%- icon('camera') %>
             <strong>Tap to add photos</strong>
-            <span class="muted" style="font-size:13px">Front yard, problem areas, rooms or surfaces to paint</span>
+            <span class="muted" style="font-size:13px">The area for the concrete, plus the path from the street or driveway to it</span>
             <span class="files" id="files"></span>
             <input type="file" name="photos" accept="image/*" multiple id="photos">
           </span>
         </label>
+        <p class="form-note full"><%- icon('clipboard') %><span>Photos let us do an initial evaluation. Your final price is confirmed after we review the project’s conditions on site.</span></p>
+        <label class="field full"><span>Anything else we should know?</span><textarea name="description" rows="4" placeholder="How you’d like to use the space, slopes, trees, drainage, gates…"><%= form.description || '' %></textarea></label>
+
+        <div class="form-section">Your contact details</div>
+        <label class="field"><span>Name *</span><input name="name" required autocomplete="name" value="<%= form.name || '' %>"></label>
+        <label class="field"><span>Phone *</span><input name="phone" type="tel" required autocomplete="tel" value="<%= form.phone || '' %>"></label>
+        <label class="field"><span>Email *</span><input name="email" type="email" required autocomplete="email" value="<%= form.email || '' %>"></label>
+        <label class="field"><span>Property address *</span><input name="address" required autocomplete="street-address" value="<%= form.address || '' %>"></label>
       </div>
       <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
       <button class="btn btn-gold btn-lg" type="submit">Send My Request <%- icon('arrow') %></button>
     </form>
     <aside class="aside-list">
-      <div><span class="medal"><%- icon('clock') %></span><div><h3>Quick response</h3><p>We review every request and get back to you with next steps.</p></div></div>
-      <div><span class="medal"><%- icon('camera') %></span><div><h3>Photos save time</h3><p>Clear photos let us estimate most jobs without driving out first.</p></div></div>
-      <div><span class="medal"><%- icon('clipboard') %></span><div><h3>Clear, written estimates</h3><p>You’ll get a professional, itemized estimate you can accept online.</p></div></div>
+      <div><span class="medal"><%- icon('camera') %></span><div><h3>Photos help</h3><p>Photos of the space and the access let us give you an initial idea before the visit.</p></div></div>
+      <div><span class="medal"><%- icon('calendar') %></span><div><h3>Site visit</h3><p>We visit to measure and check the ground, slope and access.</p></div></div>
+      <div><span class="medal"><%- icon('clipboard') %></span><div><h3>Written proposal</h3><p>You’ll get a clear written proposal you can review and accept online.</p></div></div>
       <div><span class="medal"><%- icon('pin') %></span><div><h3>Service area</h3><p><%= areas.join(' • ') %></p></div></div>
+      <% if (contact.phone || contact.email) { %>
+      <div><span class="medal"><%- icon('phone') %></span><div><h3>Prefer to talk?</h3><p>
+        <% if (contact.phone) { %><a href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%= contact.phone %></a><br><% } %>
+        <% if (contact.email) { %><a href="mailto:<%= contact.email %>"><%= contact.email %></a><% } %>
+      </p></div></div>
+      <% } %>
     </aside>
   </div>
 </section>

@@ -10,56 +10,68 @@ const { markQuoteAccepted } = require('../lib/pipeline');
 
 const router = express.Router();
 
-const SERVICE_OPTIONS = [
-  'Lawn Care (recurring)', 'Yard / Leaf Cleanup', 'Pressure Washing', 'Interior Painting', 'Exterior Painting',
-  'Cabinets / Trim / Doors', 'Deck / Fence Staining', 'Decks & Fences', 'Remodeling', 'Multiple services / Not sure',
-];
-const SERVICE_PREFILL = {
-  landscaping: 'Lawn Care (recurring)', painting: 'Interior Painting', pressure: 'Pressure Washing',
-  remodeling: 'Remodeling', decks: 'Decks & Fences',
-};
+// Project types on the estimate form: the four concrete services, plus "not sure"
+const SERVICE_OPTIONS = pricing.SERVICES.map((s) => s.request).concat('Not sure yet');
+const SERVICE_PREFILL = Object.fromEntries(pricing.SERVICES.map((s) => [s.key, s.request]));
+const pick = (list, v) => (list.includes(v) ? v : null);
 
-router.get('/', (req, res) => res.render('site/home'));
-router.get('/services', (req, res) => res.render('site/services'));
-router.get('/lawn-care', (req, res) => res.render('site/lawn-care'));
-router.get('/painting', (req, res) => res.render('site/painting'));
-router.get('/pressure-washing', (req, res) => res.render('site/pressure-washing'));
+// Retired pages (and old names) send visitors and search engines to the closest current page
+const REDIRECTS = {
+  '/services': '/concrete-services', '/gallery': '/our-work', '/lawn-care': '/concrete-services',
+  '/painting': '/concrete-services', '/pressure-washing': '/concrete-services', '/commercial': '/concrete-services',
+};
+for (const [from, to] of Object.entries(REDIRECTS)) router.get(from, (req, res) => res.redirect(301, to));
+
+// Real Northline jobs marked "show in gallery", with a before, preparation and after photo when there is one
+async function galleryProjects(limit = null) {
+  const { rows } = await db.query(`
+    SELECT j.id, j.service, j.package, j.customer_review,
+      (SELECT id FROM nl_photos WHERE owner_type='job' AND owner_id=j.id AND kind='before' ORDER BY id LIMIT 1) AS before,
+      (SELECT id FROM nl_photos WHERE owner_type='job' AND owner_id=j.id AND kind='prep'   ORDER BY id LIMIT 1) AS prep,
+      (SELECT id FROM nl_photos WHERE owner_type='job' AND owner_id=j.id AND kind='after'  ORDER BY id LIMIT 1) AS after
+    FROM nl_jobs j WHERE j.show_in_gallery ORDER BY j.job_date DESC NULLS LAST, j.id DESC`);
+  const projects = rows.filter((r) => r.before || r.prep || r.after);
+  return limit ? projects.slice(0, limit) : projects;
+}
+
+router.get('/', async (req, res, next) => {
+  try { res.render('site/home', { projects: await galleryProjects(3) }); } catch (e) { next(e); }
+});
+router.get('/concrete-services', (req, res) => res.render('site/services'));
 router.get('/about', (req, res) => res.render('site/about'));
 router.get('/service-area', (req, res) => res.render('site/service-area'));
 
-router.get('/gallery', async (req, res, next) => {
-  try {
-    const { rows } = await db.query(`
-      SELECT j.id, j.service, j.package, j.customer_review,
-        (SELECT id FROM nl_photos WHERE owner_type='job' AND owner_id=j.id AND kind='before' ORDER BY id LIMIT 1) AS before,
-        (SELECT id FROM nl_photos WHERE owner_type='job' AND owner_id=j.id AND kind='after'  ORDER BY id LIMIT 1) AS after
-      FROM nl_jobs j WHERE j.show_in_gallery ORDER BY j.job_date DESC NULLS LAST, j.id DESC`);
-    res.render('site/gallery', { projects: rows.filter((r) => r.before || r.after) });
-  } catch (e) { next(e); }
+router.get('/our-work', async (req, res, next) => {
+  try { res.render('site/gallery', { projects: await galleryProjects() }); } catch (e) { next(e); }
 });
 
 // ---------- Estimate request form ----------
-router.get('/estimate', (req, res) => {
-  res.render('site/estimate', { error: null, form: { service: SERVICE_PREFILL[req.query.service] || '' }, serviceOptions: SERVICE_OPTIONS });
-});
+const estimatePage = (res, form, error, status = 200) => res.status(status).render('site/estimate', {
+  error, form, serviceOptions: SERVICE_OPTIONS, surfaces: biz.CURRENT_SURFACES, finishes: biz.FINISHES });
+
+router.get('/estimate', (req, res) => estimatePage(res, { service: SERVICE_PREFILL[req.query.service] || '' }, null));
 
 router.post('/estimate', (req, res, next) => {
   upload.array('photos', 8)(req, res, async (err) => {
     const form = req.body || {};
-    const fail = (msg) => res.status(400).render('site/estimate', { error: msg, form, serviceOptions: SERVICE_OPTIONS });
+    const fail = (msg) => estimatePage(res, form, msg, 400);
     if (err) return fail(err.code === 'LIMIT_FILE_SIZE' ? 'One of the photos is too large (10 MB max each).' : 'We couldn’t upload those photos. Please try again with up to 8 images.');
     if (form.website) { security.logSpam(req, 'estimate', 'honeypot', form); return res.redirect('/estimate/thanks'); } // a bot filled the hidden field
     if (security.tooMany(req)) { security.logSpam(req, 'estimate', 'too_many', form); return fail('We’ve received several requests from you in a short time. Please wait a few minutes, or give us a call.'); }
     const name = (form.name || '').trim();
-    if (!name || !form.phone || !form.email || !form.address || !form.service) return fail('Please fill in all the required fields.');
+    const service = pick(SERVICE_OPTIONS, form.service);
+    if (!name || !form.phone || !form.email || !form.address || !service) return fail('Please fill in all the required fields.');
+    const measurements = (form.measurements || '').trim().slice(0, 200) || null;
+    const surface = pick(biz.CURRENT_SURFACES, form.current_surface), finish = pick(biz.FINISHES, form.finish);
     try {
       const { rows } = await db.query(
-        `INSERT INTO nl_requests (name, phone, email, address, service, preferred_date, description)
-         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-        [name, form.phone.trim(), form.email.trim(), form.address.trim(), form.service, form.preferred_date || null, (form.description || '').trim() || null]);
+        `INSERT INTO nl_requests (name, phone, email, address, service, preferred_date, description, measurements, current_surface, finish)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+        [name, form.phone.trim(), form.email.trim(), form.address.trim(), service, form.preferred_date || null, (form.description || '').trim() || null,
+          measurements, surface, finish]);
       const id = rows[0].id;
       await savePhotos('request', id, req.files || []);
-      notifyNewRequest({ id, name, service: form.service, phone: form.phone, email: form.email, address: form.address,
+      notifyNewRequest({ id, name, service, phone: form.phone, email: form.email, address: form.address, measurements, surface, finish,
         description: form.description, photos: (req.files || []).length, baseUrl: baseUrl(req) }).catch((e) => console.error('notify failed:', e.message));
       req.session.lastRequestName = name;
       res.redirect('/estimate/thanks');
@@ -68,41 +80,6 @@ router.post('/estimate', (req, res, next) => {
 });
 
 router.get('/estimate/thanks', (req, res) => res.render('site/thanks', { name: req.session.lastRequestName || '' }));
-
-// ---------- Commercial inquiries (saved as requests marked "commercial") ----------
-const commercialPage = (res, form, error, status = 200) => res.status(status).render('site/commercial', {
-  form, error, commercialServices: biz.COMMERCIAL_SERVICES, propertyTypes: biz.PROPERTY_TYPES, frequencies: biz.FREQUENCIES });
-
-router.get('/commercial', (req, res) => commercialPage(res, {}, null));
-
-router.post('/commercial', (req, res, next) => {
-  upload.array('photos', 8)(req, res, async (err) => {
-    const form = req.body || {};
-    const fail = (msg) => commercialPage(res, form, msg, 400);
-    if (err) return fail(err.code === 'LIMIT_FILE_SIZE' ? 'One of the photos is too large (10 MB max each).' : 'We couldn’t upload those photos. Please try again with up to 8 images.');
-    if (form.website) { security.logSpam(req, 'commercial', 'honeypot', form); return res.redirect('/estimate/thanks'); } // a bot filled the hidden field
-    if (security.tooMany(req)) { security.logSpam(req, 'commercial', 'too_many', form); return fail('We’ve received several requests from you in a short time. Please wait a few minutes, or give us a call.'); }
-    const services = [].concat(form.services || []).filter((s) => typeof s === 'string').map((s) => s.slice(0, 80));
-    const name = (form.name || '').trim(), company = (form.company || '').trim();
-    if (!name || !company || !form.phone || !form.email || !form.address || !form.property_type) return fail('Please fill in all the required fields.');
-    if (!services.length) return fail('Pick at least one service you’re interested in.');
-    try {
-      const service = `Commercial: ${services.join(', ')}`;
-      const { rows } = await db.query(
-        `INSERT INTO nl_requests (kind, company, property_type, frequency, name, phone, email, address, service, description)
-         VALUES ('commercial',$1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-        [company.slice(0, 200), biz.PROPERTY_TYPES.includes(form.property_type) ? form.property_type : 'Other',
-          biz.FREQUENCIES.includes(form.frequency) ? form.frequency : null, name, form.phone.trim(), form.email.trim(), form.address.trim(),
-          service, (form.description || '').trim() || null]);
-      const id = rows[0].id;
-      await savePhotos('request', id, req.files || []);
-      notifyNewRequest({ id, name: `${company} (${name})`, service, phone: form.phone, email: form.email, address: form.address,
-        description: form.description, photos: (req.files || []).length, baseUrl: baseUrl(req) }).catch((e) => console.error('notify failed:', e.message));
-      req.session.lastRequestName = name;
-      res.redirect('/estimate/thanks');
-    } catch (e) { next(e); }
-  });
-});
 
 // ---------- Careers ----------
 const RESUME_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

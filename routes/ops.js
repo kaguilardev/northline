@@ -15,7 +15,9 @@ router.use('/admin', requireAdmin);
 
 const JOB_STATUSES = ['scheduled', 'in_progress', 'completed', 'cancelled'];
 const PAY_STATUSES = ['unpaid', 'deposit', 'paid'];
-const SERVICE_TYPES = ['Lawn Care', 'Yard Cleanup', 'Pressure Washing', 'Painting', 'Remodeling', 'Decks & Fences', 'Other'];
+// Concrete types first; the older services stay so existing jobs keep their type when edited
+const SERVICE_TYPES = ['Concrete Patio', 'Patio Extension', 'Concrete Walkway', 'Concrete Pad / Small Slab', 'Other',
+  'Lawn Care', 'Yard Cleanup', 'Pressure Washing', 'Painting', 'Remodeling', 'Decks & Fences'];
 const num = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
 
 // Everyone who can be put on a job (crew first)
@@ -309,7 +311,7 @@ router.get('/admin/jobs/:id', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-const jobUpload = upload.fields([{ name: 'before', maxCount: 8 }, { name: 'after', maxCount: 8 }]);
+const jobUpload = upload.fields([{ name: 'before', maxCount: 8 }, { name: 'prep', maxCount: 8 }, { name: 'after', maxCount: 8 }]);
 
 function saveJob(id) {
   return (req, res, next) => jobUpload(req, res, async (err) => {
@@ -339,8 +341,7 @@ function saveJob(id) {
       await db.query('UPDATE nl_jobs SET start_time=$1 WHERE id=$2', [/^\d{2}:\d{2}$/.test(b.start_time || '') ? b.start_time : null, jobId]);
       await db.query('DELETE FROM nl_job_crew WHERE job_id=$1', [jobId]);
       for (const c of crew) await db.query('INSERT INTO nl_job_crew (job_id, user_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [jobId, c.id]);
-      await savePhotos('job', jobId, (req.files && req.files.before) || [], 'before');
-      await savePhotos('job', jobId, (req.files && req.files.after) || [], 'after');
+      for (const kind of ['before', 'prep', 'after']) await savePhotos('job', jobId, (req.files && req.files[kind]) || [], kind);
       await syncClientFromJob(vals[0], vals[9], vals[8]);
       res.redirect(`/admin/jobs/${jobId}`);
     } catch (e) { next(e); }

@@ -2,76 +2,115 @@
 <section class="hero">
   <div class="container">
     <div>
-      <div class="label">Residential Home &amp; Outdoor Services</div>
-      <h1 style="margin-top:16px">Professional quality<br>at a <em>fair price.</em></h1>
-      <p class="lede">Painting, landscaping, pressure washing, remodeling, decks &amp; fences — one organized, on-time team for the work around your home in Durham, Raleigh, Cary and Chapel Hill.</p>
+      <div class="label">Residential Concrete in Durham &amp; the Triangle</div>
+      <h1 style="margin-top:16px">Concrete patios.<br>More room to enjoy <em>home.</em></h1>
+      <p class="lede">Patios, patio extensions, walkways and concrete pads for homes in Durham, Raleigh, Cary and Chapel Hill.</p>
       <div class="cta">
         <a class="btn btn-gold btn-lg" href="/estimate">Get a Free Estimate <%- icon('arrow') %></a>
-        <a class="btn btn-ghost btn-lg" href="/lawn-care">See Our Pricing</a>
+        <a class="btn btn-ghost btn-lg" href="/concrete-services">Explore Our Services</a>
       </div>
       <div class="trust">
-        <span><%- icon('shield') %> Quality Work</span>
-        <span><%- icon('sprout') %> Premium Materials</span>
-        <span><%- icon('users') %> Residential Experts</span>
+        <span><%- icon('clipboard') %> Written proposals</span>
+        <span><%- icon('house') %> Residential only</span>
+        <span><%- icon('pin') %> Durham &amp; the Triangle</span>
       </div>
     </div>
-    <div class="price-stack" aria-label="Starting prices">
-      <a class="price-card" href="/lawn-care"><span class="badge"><%- icon('leaf') %></span><span><span class="t">Basic Lawn Care</span><br><span class="s">Mow • Trim • Edge • Blow</span></span><span class="p"><small>From</small><%= money(lawnPackages.find(p => p.key === 'basic').from) %></span></a>
-      <a class="price-card" href="/lawn-care#packages"><span class="badge"><%- icon('house') %></span><span><span class="t">Curb Appeal</span><br><span class="s">Lawn care + pressure washing</span></span><span class="p"><small>From</small><%= money(lawnPackages.find(p => p.key === 'curb').from) %></span></a>
-      <a class="price-card" href="/painting"><span class="badge"><%- icon('roller') %></span><span><span class="t">Room Refresh</span><br><span class="s">Prep + two coats, one room</span></span><span class="p"><small>From</small><%= paintPackages.find(p => p.key === 'room').from != null ? money(paintPackages.find(p => p.key === 'room').from) : 'Quote' %></span></a>
+    <% if (heroPhoto) { %>
+    <div class="hero-photo"><img src="<%= heroPhoto %>" alt="A finished concrete patio by Northline" fetchpriority="high"></div>
+    <% } else { %>
+    <div class="hero-photo placeholder" role="img" aria-label="Concrete patio">
+      <% if (devMode) { %><span class="ph-note">Photo slot: save a photo of a finished Northline patio as <code>public/img/hero-patio.jpg</code> and restart.</span><% } %>
     </div>
+    <% } %>
   </div>
   <div class="pines" aria-hidden="true"></div>
 </section>
 
-<div class="band"><div class="container"><span>Clean</span><span class="dot">•</span><span>Reliable</span><span class="dot">•</span><span>Professional</span></div></div>
+<div class="band"><div class="container"><span>Concrete Patios</span><span class="dot">•</span><span>Walkways</span><span class="dot">•</span><span>Slabs</span></div></div>
 
 <section class="section">
   <div class="container">
     <div class="section-head center reveal">
-      <div class="label rule">What we do</div>
-      <h2>One call for the work around your house.</h2>
-      <p class="lede">No more juggling a different contractor for every job. With Northline, one trusted team takes care of the inside and the outside.</p>
+      <div class="label rule">Concrete services</div>
+      <h2>Outdoor space, built in concrete.</h2>
+      <p class="lede">Four kinds of residential projects, planned around your home and how you want to use it.</p>
     </div>
-    <div class="grid g5 balanced">
-      <% services.forEach(s => { %>
-      <a class="card svc reveal" href="<%= s.href %>">
+    <div class="svc4">
+      <% services.forEach((s, i) => { %>
+      <a class="card svc reveal <%= i === 0 ? 'lead' : '' %>" href="<%= s.href %>">
         <span class="medal"><%- icon(s.icon) %></span>
-        <h3><%= s.short %></h3>
+        <h3><%= s.name %></h3>
         <p><%= s.blurb %></p>
+        <% if (i === 0) { %><span class="svc-visual <%= heroPhoto ? '' : 'placeholder' %>" aria-hidden="true"<% if (heroPhoto) { %> style="background-image:url(<%= heroPhoto %>)"<% } %>></span><% } %>
         <span class="more">Learn more <%- icon('arrow') %></span>
       </a>
       <% }) %>
     </div>
-    <p class="center reveal biz-line"><%- icon('building') %> Own or manage a business property? <a href="/commercial">See our commercial services →</a></p>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="label rule">Our work</div>
+      <h2>Real Northline projects.</h2>
+      <p class="lede">Before, preparation and the finished result.</p>
+    </div>
+    <% if (projects.length) { %>
+    <div class="grid g3">
+      <% projects.forEach(p => { const shots = [['Before', p.before], ['Preparation', p.prep], ['Result', p.after]].filter(s => s[1]); %>
+      <article class="card ba reveal">
+        <div class="pair <%= shots.length === 3 ? 'three' : '' %>">
+          <% shots.forEach(([cap, id]) => { %><figure><img src="/photo/<%= id %>" alt="<%= cap %>" loading="lazy"><figcaption><%= cap %></figcaption></figure><% }) %>
+        </div>
+        <div class="info"><h3><%= p.package || p.service || 'Northline project' %></h3></div>
+      </article>
+      <% }) %>
+    </div>
+    <p class="center" style="margin-top:28px"><a class="btn btn-ghost" href="/our-work">See all our work</a></p>
+    <% } else { %>
+    <div class="project-empty">
+      <div class="stage reveal"><span class="medal"><%- icon('camera') %></span><h3>Before</h3><p>The space as we find it: grass, dirt or old concrete.</p></div>
+      <div class="stage reveal"><span class="medal"><%- icon('clipboard') %></span><h3>Preparation</h3><p>Layout, excavation, base and forms, ready for the pour.</p></div>
+      <div class="stage reveal"><span class="medal"><%- icon('patio') %></span><h3>Result</h3><p>The finished surface, ready to enjoy.</p></div>
+    </div>
+    <p class="center muted" style="margin-top:22px">Photos from our projects are on the way. <a href="/our-work">Visit Our Work</a></p>
+    <% } %>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head center reveal"><div class="label rule">How it works</div><h2>From first photo to finished concrete.</h2></div>
+    <div class="grid g4 steps">
+      <div class="step reveal"><h3>Request</h3><p>Send the form with a few photos of the space and how we can get to it.</p></div>
+      <div class="step reveal"><h3>Site visit</h3><p>We visit to take measurements and check the ground, slope and access.</p></div>
+      <div class="step reveal"><h3>Written proposal</h3><p>You get a clear written proposal with the scope and price for your project.</p></div>
+      <div class="step reveal"><h3>Installation</h3><p>We prepare the site, pour and finish the concrete, and clean up when we’re done.</p></div>
+    </div>
   </div>
 </section>
 
 <section class="section alt">
   <div class="container split">
     <div class="reveal">
-      <div class="label">The Northline standard</div>
-      <h2 style="margin:12px 0 22px">The little things, done right every time.</h2>
-      <blockquote class="quote-block">Our promise is simple: treat every home like it’s our own, and leave it better than we found it.</blockquote>
+      <div class="label">About Northline</div>
+      <h2 style="margin:12px 0 22px">Focused on residential concrete.</h2>
+      <p class="lede" style="margin:0 0 24px">Northline Home &amp; Outdoor builds concrete patios, walkways and small slabs for homeowners around the Triangle. We keep our focus narrow so every project gets the attention it needs.</p>
+      <a class="btn btn-ghost" href="/about">More about us</a>
     </div>
     <ul class="checks reveal">
-      <li><%- icon('check') %><span><strong>Uniformed crews</strong> — you’ll always know who’s on your property.</span></li>
       <li><%- icon('check') %><span><strong>Clear communication</strong> and confirmed appointments.</span></li>
-      <li><%- icon('check') %><span><strong>Respect for your home</strong> — we work carefully and clean up before we leave.</span></li>
-      <li><%- icon('check') %><span><strong>Professional written estimates</strong> with no surprises.</span></li>
-      <li><%- icon('check') %><span><strong>We do what we promise</strong> — on time, every time.</span></li>
+      <li><%- icon('check') %><span><strong>Written proposals</strong> so you know the scope before we start.</span></li>
+      <li><%- icon('check') %><span><strong>Respect for your property</strong>: we work carefully and clean up before we leave.</span></li>
     </ul>
   </div>
 </section>
 
 <section class="section">
-  <div class="container">
-    <div class="section-head center reveal"><div class="label rule">How it works</div><h2>Getting started is easy.</h2></div>
-    <div class="grid g3 steps">
-      <div class="step reveal"><h3>Tell us what you need</h3><p>Fill out a quick form and add a few photos of the area. Photos let us quote most jobs without a site visit.</p></div>
-      <div class="step reveal"><h3>Get a clear estimate</h3><p>We send a professional, itemized estimate you can review and accept online.</p></div>
-      <div class="step reveal"><h3>We show up and deliver</h3><p>A uniformed crew arrives on schedule, does the work right and leaves your property clean.</p></div>
-    </div>
+  <div class="container narrow">
+    <div class="section-head center reveal"><div class="label rule">Questions</div><h2>Frequently asked questions.</h2></div>
+    <%- include('../partials/faq') %>
   </div>
 </section>
 

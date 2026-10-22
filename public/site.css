@@ -339,6 +339,75 @@ table.price .custom td { color: var(--gold-deep); font-weight: 600; }
 }
 @media (max-width: 520px) { .grid.g5.balanced > * { flex-basis: 100%; } .tile { font-size: 14px; padding: 12px; } }
 
+/* ───────── Residential concrete redesign ───────── */
+/* wide concrete logo (artwork includes "Residential Concrete") */
+.logo img { height: 50px; width: auto; }
+.site-footer img.flogo { width: 260px; height: auto; }
+@media (max-width: 520px) { .logo img { height: auto; width: min(220px, 58vw); } }
+/* free-estimate button stays reachable on smaller screens */
+.header-cta { display: none; min-height: 44px; padding: 12px 18px; font-size: 12.5px; }
+.sticky-cta { display: none; }
+@media (max-width: 1180px) { .header-cta { display: inline-flex; margin-left: auto; } .mobile-nav { margin-left: 4px; } }
+@media (max-width: 820px) {
+  .header-cta { display: none; } .mobile-nav { margin-left: auto; }
+  .sticky-cta { display: flex; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 40; box-shadow: 0 10px 30px -6px rgba(11,47,33,.45); }
+  body { padding-bottom: 76px; }
+  .no-sticky-cta .sticky-cta { display: none; } body.no-sticky-cta { padding-bottom: 0; }
+}
+
+/* photo-led hero */
+.hero-photo { position: relative; border-radius: 22px; overflow: hidden; aspect-ratio: 4/5; box-shadow: 0 30px 60px -28px rgba(11,47,33,.55); background: var(--cream-2); }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; }
+.hero-photo.placeholder { display: grid; place-items: end start; padding: 22px;
+  background: linear-gradient(160deg, rgba(255,255,255,.35), transparent 40%),
+    repeating-linear-gradient(90deg, transparent 0 calc(33.3% - 2px), rgba(80,80,70,.18) calc(33.3% - 2px) 33.3%),
+    repeating-linear-gradient(0deg, transparent 0 calc(25% - 2px), rgba(80,80,70,.18) calc(25% - 2px) 25%),
+    radial-gradient(circle at 30% 20%, #d9d6cf, #bdb9b0 70%); }
+.hero-photo .ph-note { background: rgba(11,47,33,.86); color: var(--cream); font: 600 12px/1.5 var(--label); letter-spacing: .04em; padding: 10px 14px; border-radius: 10px; max-width: 320px; }
+.hero-photo .ph-note code { color: var(--gold-soft); }
+.photo-tag { position: absolute; left: 14px; top: 14px; background: rgba(11,47,33,.85); color: var(--cream); font: 700 10px var(--label); letter-spacing: .16em; text-transform: uppercase; padding: 6px 10px; border-radius: 99px; }
+
+/* services: 4 categories, patios lead */
+.svc4 { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; }
+.svc4 > :first-child { grid-row: span 3; }
+/* the three smaller services sit beside the patio card as compact rows */
+.svc4 > .svc:not(.lead) { display: grid; grid-template-columns: auto 1fr; gap: 4px 18px; align-content: center; padding: 22px 24px; }
+.svc4 > .svc:not(.lead) .medal { grid-row: span 3; margin: 0; align-self: start; }
+.svc4 > .svc:not(.lead) h3 { margin-top: 4px; }
+.svc4 .svc.lead h3 { font-size: 26px; }
+.svc4 .svc.lead p { font-size: 16.5px; flex: none; }
+.svc-visual { flex: 1; min-height: 160px; border-radius: var(--r-sm); background: center / cover no-repeat; }
+.svc-visual.placeholder { background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 2px), rgba(80,80,70,.18) calc(25% - 2px) 25%),
+  repeating-linear-gradient(0deg, transparent 0 calc(33.3% - 2px), rgba(80,80,70,.18) calc(33.3% - 2px) 33.3%), radial-gradient(circle at 30% 20%, #d9d6cf, #bdb9b0 70%); }
+@media (max-width: 820px) { .svc4 { grid-template-columns: 1fr; } .svc4 > :first-child { grid-row: auto; } }
+
+/* projects: before → preparation → result */
+.ba .pair.three { grid-template-columns: repeat(3, 1fr); }
+.project-empty { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.stage { border: 1.5px dashed var(--line); border-radius: var(--r); background: var(--paper); padding: 26px; text-align: center; }
+.stage .medal { margin: 0 auto 14px; width: 50px; height: 50px; }
+.stage h3 { font-size: 18px; } .stage p { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+@media (max-width: 820px) { .project-empty { grid-template-columns: 1fr; } }
+
+/* process: 4 steps */
+.g4.steps .step h3 { font-size: 19px; }
+
+/* FAQ */
+.faq { display: grid; gap: 12px; }
+.faq details { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 0 22px; }
+.faq summary { cursor: pointer; list-style: none; padding: 20px 0; font: 700 17px var(--serif); color: var(--green-900); display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary .ico { color: var(--gold-deep); transition: transform .2s; }
+.faq details[open] summary .ico { transform: rotate(180deg); }
+.faq details p { margin: 0 0 20px; color: var(--ink-2); }
+
+/* estimate form: concrete details */
+.form-section { grid-column: 1 / -1; margin: 10px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); font: 700 12px var(--label); letter-spacing: .18em; text-transform: uppercase; color: var(--gold-deep); }
+.form-note { display: flex; gap: 12px; align-items: flex-start; background: #fbf7ee; border: 1px solid var(--gold-soft); border-radius: var(--r-sm); padding: 14px 16px; font-size: 14.5px; color: var(--ink-2); margin: 0 0 20px; }
+.form-note .ico { color: var(--gold-deep); margin-top: 2px; }
+.check-grid.c4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 820px) { .check-grid.c4 { grid-template-columns: 1fr 1fr; } }
+
 /* language switch */
 .lang { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 99px; padding: 2px; }
 .lang a { padding: 4px 10px; border-radius: 99px; font: 700 11.5px var(--label); letter-spacing: .1em; color: var(--gold-soft); text-decoration: none; min-width: 34px; text-align: center; }

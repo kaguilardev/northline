@@ -35,6 +35,7 @@
     <form method="post" action="/crew/jobs/<%= job.id %>/photos" enctype="multipart/form-data" class="form" style="margin-top:12px">
       <div class="seg" role="group" aria-label="Photo type" style="margin-bottom:10px">
         <label class="seg-opt"><input type="radio" name="kind" value="before" <%= job.status === 'scheduled' ? 'checked' : '' %>> Before photos</label>
+        <label class="seg-opt"><input type="radio" name="kind" value="prep"> Prep photos</label>
         <label class="seg-opt"><input type="radio" name="kind" value="after" <%= job.status !== 'scheduled' ? 'checked' : '' %>> After photos</label>
       </div>
       <input type="file" name="photos" accept="image/*" multiple required>

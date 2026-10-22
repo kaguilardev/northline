@@ -1,32 +1,32 @@
-<%- include('../partials/site-head', { title: 'Services' }) %>
+<%- include('../partials/site-head', { title: 'Concrete Services', description: 'Concrete patios, patio extensions, walkways and small slabs for homes in Durham, Raleigh, Cary and Chapel Hill. Free estimates and written proposals.' }) %>
 <section class="page-hero">
   <div class="container">
-    <div class="label">Our services</div>
-    <h1>Everything your home needs, inside and out.</h1>
-    <p class="lede">From a weekly mow to a freshly painted living room, Northline is one friendly, dependable team for the care and upkeep of your home.</p>
+    <div class="label">Concrete services</div>
+    <h1>Residential concrete, done carefully.</h1>
+    <p class="lede">Four kinds of projects for homes around the Triangle. Every one starts with a look at your space and ends with a written proposal.</p>
   </div>
   <div class="pines" aria-hidden="true"></div>
 </section>
 <section class="section">
   <div class="container grid" style="gap:28px">
     <% const details = {
-      landscaping: { list: ['Recurring mowing, trimming, edging & blowing', 'Leaf and yard cleanups', 'Packages from ' + money(lawnPackages[0].from) + ' per visit'], cta: 'See lawn care pricing' },
-      painting: { list: ['Interior & exterior painting', 'Trim, doors and cabinets', 'Deck & fence staining'], cta: 'See painting pricing' },
-      pressure: { list: ['Driveways, sidewalks & walkways', 'Patios, decks & outdoor furniture', 'Trash bin cleaning'], cta: 'See pressure washing pricing' },
-      remodeling: { list: ['Interior updates and repairs', 'Drywall patching and prep', 'Custom quote for every project'], cta: 'Request a remodeling estimate' },
-      decks: { list: ['Deck and fence cleaning', 'Staining and sealing', 'Repairs and upgrades'], cta: 'Request a deck or fence estimate' },
+      patios: ['Sized and laid out to fit your yard', 'Room for seating, dining or a grill', 'Connects to your doors and walkways'],
+      extensions: ['Adds space to an existing patio', 'More room for gatherings and outdoor dining', 'Planned to work with what’s already there'],
+      walkways: ['Paths around the side and back of the house', 'Connections between the driveway, doors and patio', 'Laid out for how you move around your home'],
+      pads: ['Pads for sheds and similar uses', 'Size and base depend on what the pad will hold', 'Subject to each project’s requirements'],
     }; %>
-    <% services.forEach(s => { const d = details[s.key]; %>
+    <% services.forEach(s => { %>
     <div class="card reveal svc-row" id="<%= s.key %>">
       <span class="medal"><%- icon(s.icon) %></span>
       <div>
         <h3 style="font-size:26px"><%= s.name %></h3>
         <p class="muted" style="margin:8px 0 14px"><%= s.blurb %></p>
-        <ul class="points"><% d.list.forEach(l => { %><li><%- icon('check') %><%= l %></li><% }) %></ul>
+        <ul class="points"><% details[s.key].forEach(l => { %><li><%- icon('check') %><%= l %></li><% }) %></ul>
       </div>
-      <a class="btn btn-ghost" href="<%= s.href.includes('#') ? '/estimate?service=' + s.key : s.href %>"><%= d.cta %></a>
+      <a class="btn btn-ghost" href="/estimate?service=<%= s.key %>">Request an estimate</a>
     </div>
     <% }) %>
+    <div class="note reveal"><%- icon('clipboard') %><span><strong>About finishes:</strong> we’ll go over the finishes we install during your site visit. Not sure what you want? Choose “I need guidance” on the estimate form.</span></div>
   </div>
 </section>
 <%- include('../partials/cta') %>

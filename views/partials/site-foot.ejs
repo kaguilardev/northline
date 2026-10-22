@@ -3,21 +3,20 @@
   <div class="container">
     <div class="cols">
       <div>
-        <img class="flogo" src="/img/logo-light.png" alt="Northline Home & Outdoor" loading="lazy">
-        <p style="margin:12px 0 0;max-width:300px">Residential painting, landscaping, pressure washing, remodeling, decks &amp; fences. Professional quality at a fair price.</p>
-        <div class="motto">Clean • Reliable • Professional</div>
+        <img class="flogo" src="/img/logo-concrete-light.png" alt="Northline Home & Outdoor · Residential Concrete" loading="lazy">
+        <p style="margin:12px 0 0;max-width:300px">Concrete patios, patio extensions, walkways and small slabs for homes in Durham and the Triangle.</p>
+        <div class="motto">Concrete Patios • Walkways • Slabs</div>
       </div>
       <div>
-        <h4>Services</h4>
+        <h4>Concrete Services</h4>
         <ul><% services.forEach(s => { %><li><a href="<%= s.href %>"><%= s.short %></a></li><% }) %></ul>
       </div>
       <div>
         <h4>Company</h4>
         <ul>
           <li><a href="/about">About Northline</a></li>
-          <li><a href="/gallery">Project Gallery</a></li>
+          <li><a href="/our-work">Our Work</a></li>
           <li><a href="/service-area">Service Area</a></li>
-          <li><a href="/commercial">Commercial Services</a></li>
           <li><a href="/careers">Careers</a></li>
           <li><a href="/estimate">Request an Estimate</a></li>
         </ul>
@@ -36,6 +35,7 @@
   </div>
   <div class="pines" aria-hidden="true"></div>
 </footer>
+<a class="sticky-cta btn btn-gold" href="/estimate"><%- icon('clipboard') %> Get a Free Estimate</a>
 <script>
   // Fade sections in as you scroll
   (function () {

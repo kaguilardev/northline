@@ -51,6 +51,9 @@ app.locals.paintPackages = pricing.PAINT_PACKAGES;
 app.locals.paintAddons = pricing.PAINT_ADDONS;
 app.locals.pressureSurfaces = pricing.PRESSURE_SURFACES;
 app.locals.contact = { phone: process.env.BUSINESS_PHONE || '', email: process.env.BUSINESS_EMAIL || '' };
+// Home page hero photo: drop a photo of a finished Northline patio at public/img/hero-patio.jpg
+app.locals.heroPhoto = require('fs').existsSync(path.join(__dirname, 'public', 'img', 'hero-patio.jpg')) ? '/img/hero-patio.jpg' : null;
+app.locals.devMode = !isProd;
 
 app.use(refreshUser);
 app.use((req, res, next) => {

@@ -71,10 +71,10 @@ router.post('/crew/jobs/:id/photos', (req, res, next) => {
       const job = await myJob(req, req.params.id);
       if (!job) return res.redirect('/crew');
       if (err) return res.redirect(`/crew/jobs/${job.id}?flash=${encodeURIComponent('Those photos couldn’t be uploaded. Try up to 8 at a time.')}`);
-      const kind = req.body.kind === 'before' ? 'before' : 'after';
+      const kind = ['before', 'prep'].includes(req.body.kind) ? req.body.kind : 'after';
       await savePhotos('job', job.id, req.files || [], kind);
       const n = (req.files || []).length;
-      res.redirect(`/crew/jobs/${job.id}?flash=${encodeURIComponent(n ? `${n} ${kind} photo${n > 1 ? 's' : ''} added.` : 'No photos were chosen.')}`);
+      res.redirect(`/crew/jobs/${job.id}?flash=${encodeURIComponent(n ? `${n} ${kind === 'prep' ? 'preparation' : kind} photo${n > 1 ? 's' : ''} added.` : 'No photos were chosen.')}`);
     } catch (e) { next(e); }
   });
 });

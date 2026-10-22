@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= typeof title !== 'undefined' && title ? title + ' · ' : '' %>Northline Home & Outdoor</title>
-  <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Painting, landscaping, pressure washing, remodeling, decks & fences in Durham, Raleigh, Cary and Chapel Hill. Professional quality at a fair price.' %>">
+  <title><%= typeof title !== 'undefined' && title ? title + ' · ' : '' %>Northline Home & Outdoor<%= typeof title !== 'undefined' && title ? '' : ' · Residential Concrete in Durham & the Triangle' %></title>
+  <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Residential concrete patios, patio extensions, walkways and small slabs in Durham, Raleigh, Cary and Chapel Hill. Free written estimates.' %>">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/site.css">
 </head>
-<body class="<%= typeof lang !== 'undefined' && lang !== 'en' ? 'lang-' + lang : '' %>">
+<body class="<%= typeof lang !== 'undefined' && lang !== 'en' ? 'lang-' + lang : '' %><%= path === '/estimate' ? ' no-sticky-cta' : '' %>">
 <div class="topbar">
   <div class="container">
     <span class="areas"><%- icon('pin') %> <%= areas.slice(0,4).join(' • ') %> &amp; surrounding areas</span>
@@ -20,35 +20,35 @@
       <%- include('lang-toggle') %>
       <% if (contact.phone) { %><a href="tel:<%= contact.phone.replace(/[^\d+]/g,'') %>"><%- icon('phone') %> <%= contact.phone %></a><% } %>
       <% if (contact.email) { %><a href="mailto:<%= contact.email %>"><%- icon('mail') %> <%= contact.email %></a><% } %>
-      <% if (!contact.phone && !contact.email) { %><span>Clean • Reliable • Professional</span><% } %>
+      <% if (!contact.phone && !contact.email) { %><span>Concrete Patios • Walkways • Slabs</span><% } %>
     </span>
   </div>
 </div>
 <header class="site-header">
   <div class="container">
-    <a class="logo" href="/" aria-label="Northline Home & Outdoor — home"><img src="/img/logo.png" alt="Northline Home & Outdoor" width="110" height="59"></a>
-    <% const svcPaths = ['/services'].concat(services.map(s => s.href.split('#')[0]));
-       const inServices = svcPaths.includes(path);
-       const nav = [['/commercial','For Businesses'],['/gallery','Gallery'],['/about','About'],['/service-area','Service Area']]; %>
+    <a class="logo" href="/" aria-label="Northline Home & Outdoor, Residential Concrete — home"><img src="/img/logo-concrete.png" alt="Northline Home & Outdoor · Residential Concrete" width="1658" height="299"></a>
+    <% const inServices = path === '/concrete-services';
+       const nav = [['/our-work','Our Work'],['/about','About'],['/service-area','Service Area']]; %>
     <nav class="mainnav" aria-label="Main">
       <a href="/" class="<%= path === '/' ? 'on' : '' %>">Home</a>
       <div class="dd">
-        <button type="button" class="dd-toggle <%= inServices ? 'on' : '' %>" aria-expanded="false" aria-haspopup="true">Services <%- icon('chevron') %></button>
+        <button type="button" class="dd-toggle <%= inServices ? 'on' : '' %>" aria-expanded="false" aria-haspopup="true">Concrete Services <%- icon('chevron') %></button>
         <div class="dd-menu">
           <% services.forEach(s => { %><a href="<%= s.href %>"><span class="dd-ico"><%- icon(s.icon) %></span><%= s.name %></a><% }) %>
-          <a class="dd-all" href="/services">View all services <%- icon('arrow') %></a>
+          <a class="dd-all" href="/concrete-services">All concrete services <%- icon('arrow') %></a>
         </div>
       </div>
       <% nav.forEach(([href,label]) => { %><a href="<%= href %>" class="<%= path === href ? 'on' : '' %>"><%= label %></a><% }) %>
       <a class="btn btn-gold" href="/estimate">Free Estimate</a>
     </nav>
+    <a class="btn btn-gold header-cta" href="/estimate">Free Estimate</a>
     <details class="mobile-nav">
       <summary aria-label="Open menu"><%- icon('menu') %></summary>
       <div class="panel">
         <a href="/">Home</a>
-        <div class="m-group">Services</div>
+        <div class="m-group">Concrete Services</div>
         <% services.forEach(s => { %><a class="m-sub" href="<%= s.href %>"><%= s.name %></a><% }) %>
-        <a class="m-sub" href="/services">All services</a>
+        <a class="m-sub" href="/concrete-services">All concrete services</a>
         <% nav.forEach(([href,label]) => { %><a href="<%= href %>"><%= label %></a><% }) %>
         <a class="btn btn-gold" href="/estimate">Get a Free Estimate</a>
       </div>

@@ -1,9 +1,9 @@
-<%- include('../partials/site-head', { title: 'Project Gallery' }) %>
+<%- include('../partials/site-head', { title: 'Our Work', description: 'Concrete patios, walkways and slabs built by Northline in Durham and the Triangle: before, preparation and the finished result.' }) %>
 <section class="page-hero">
   <div class="container">
-    <div class="label">Project gallery</div>
-    <h1>Before &amp; after.</h1>
-    <p class="lede">Real Northline projects from around the Triangle.</p>
+    <div class="label">Our work</div>
+    <h1>Before, preparation &amp; result.</h1>
+    <p class="lede">Real Northline concrete projects from around the Triangle.</p>
   </div>
   <div class="pines" aria-hidden="true"></div>
 </section>
@@ -12,21 +12,19 @@
     <% if (!projects.length) { %>
       <div class="empty reveal">
         <span class="medal"><%- icon('camera') %></span>
-        <h3>Our gallery is growing.</h3>
-        <p class="muted" style="max-width:460px;margin:10px auto 22px">We’re adding before-and-after photos from recent projects. Want yours to be next?</p>
+        <h3>Project photos are on the way.</h3>
+        <p class="muted" style="max-width:460px;margin:10px auto 22px">We’re adding photos from our concrete projects. Want yours to be next?</p>
         <a class="btn btn-gold" href="/estimate">Get a Free Estimate</a>
       </div>
     <% } else { %>
-    <div class="grid g3">
-      <% projects.forEach(p => { %>
+    <div class="grid g2">
+      <% projects.forEach(p => { const shots = [['Before', p.before], ['Preparation', p.prep], ['Result', p.after]].filter(s => s[1]); %>
       <article class="card ba reveal">
-        <div class="pair">
-          <figure><% if (p.before) { %><img src="/photo/<%= p.before %>" alt="Before" loading="lazy"><% } %><figcaption>Before</figcaption></figure>
-          <figure><% if (p.after) { %><img src="/photo/<%= p.after %>" alt="After" loading="lazy"><% } %><figcaption>After</figcaption></figure>
+        <div class="pair <%= shots.length === 3 ? 'three' : '' %>">
+          <% shots.forEach(([cap, id]) => { %><figure><img src="/photo/<%= id %>" alt="<%= cap %>" loading="lazy"><figcaption><%= cap %></figcaption></figure><% }) %>
         </div>
         <div class="info">
           <h3><%= p.package || p.service || 'Northline project' %></h3>
-          <% if (p.city) { %><p class="muted" style="margin:4px 0 0;font-size:14px"><%= p.city %></p><% } %>
           <% if (p.customer_review) { %><p style="margin:12px 0 0;font-style:italic;font-size:15px">“<%= p.customer_review %>”</p><% } %>
         </div>
       </article>
