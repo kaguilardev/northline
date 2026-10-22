@@ -5,7 +5,7 @@
     <% const isApp = typeof kind !== 'undefined' && kind === 'application'; %>
     <div class="label rule"><%= isApp ? 'Application received' : 'Request received' %></div>
     <h1 style="margin:14px 0 18px;font-size:clamp(34px,5vw,52px)">Thank you<% if (name) { %>, <span translate="no"><%= name.split(' ')[0] %></span><% } %>!</h1>
-    <p class="lede" style="margin:0 auto 30px"><%= isApp ? 'Thanks for your interest in joining Northline. We review every application and will reach out if it’s a good fit.' : 'We’re glad you reached out. We’ll review your request and photos, and get in touch to schedule a visit to your home.' %></p>
+    <p class="lede" style="margin:0 auto 30px"><%= isApp ? 'Thanks for your interest in joining Northline. We review every application and will reach out if it’s a good fit.' : 'We’re glad you reached out. We’ll review your request and photos, and get in touch to schedule a visit.' %></p>
     <a class="btn btn-ghost" href="/">Back to home</a>
   </div>
 </section>
